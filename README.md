@@ -54,6 +54,12 @@ One install, four supported agents:
 
 ### macOS / Linux
 
+Pick the block that matches your agent — the bootstrapper cross-links everything,
+so all four agents will find the skill no matter which directory you clone into.
+
+<details open>
+<summary>🟣 Claude Code</summary>
+
 ```bash
 # 1️⃣  Create the vault and make it a git repo
 mkdir -p ~/brain && cd ~/brain
@@ -67,7 +73,69 @@ rm -rf .claude/skills/my-llm-wiki/.git   # you own this copy now; edit freely
 python .claude/skills/my-llm-wiki/scripts/init_vault.py
 ```
 
+</details>
+
+<details>
+<summary>🔵 Gemini CLI</summary>
+
+```bash
+# 1️⃣  Create the vault and make it a git repo
+mkdir -p ~/brain && cd ~/brain
+git init
+
+# 2️⃣  Install the skill into the vault's agent directory
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .gemini/skills/my-llm-wiki
+rm -rf .gemini/skills/my-llm-wiki/.git   # you own this copy now; edit freely
+
+# 3️⃣  Bootstrap the vault
+python .gemini/skills/my-llm-wiki/scripts/init_vault.py
+```
+
+</details>
+
+<details>
+<summary>🟢 OpenCode</summary>
+
+```bash
+# 1️⃣  Create the vault and make it a git repo
+mkdir -p ~/brain && cd ~/brain
+git init
+
+# 2️⃣  Install the skill (OpenCode reads from .claude/skills/)
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .claude/skills/my-llm-wiki
+rm -rf .claude/skills/my-llm-wiki/.git   # you own this copy now; edit freely
+
+# 3️⃣  Bootstrap the vault
+python .claude/skills/my-llm-wiki/scripts/init_vault.py
+```
+
+</details>
+
+<details>
+<summary>🟡 Hermes</summary>
+
+```bash
+# 1️⃣  Create the vault and make it a git repo
+mkdir -p ~/brain && cd ~/brain
+git init
+
+# 2️⃣  Install the skill into the vault's agent directory
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .agents/skills/my-llm-wiki
+rm -rf .agents/skills/my-llm-wiki/.git   # you own this copy now; edit freely
+
+# 3️⃣  Bootstrap the vault
+python .agents/skills/my-llm-wiki/scripts/init_vault.py
+
+# 4️⃣  Trust the skill (Hermes only, once per vault)
+hermes skills trust
+```
+
+</details>
+
 ### Windows PowerShell
+
+<details open>
+<summary>🟣 Claude Code</summary>
 
 ```powershell
 # 1️⃣  Create the vault and make it a git repo
@@ -82,6 +150,68 @@ Remove-Item -Recurse -Force .claude\skills\my-llm-wiki\.git
 # 3️⃣  Bootstrap the vault
 python .claude\skills\my-llm-wiki\scripts\init_vault.py
 ```
+
+</details>
+
+<details>
+<summary>🔵 Gemini CLI</summary>
+
+```powershell
+# 1️⃣  Create the vault and make it a git repo
+New-Item -ItemType Directory -Force ~\brain | Out-Null
+Set-Location ~\brain
+git init
+
+# 2️⃣  Install the skill
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .gemini\skills\my-llm-wiki
+Remove-Item -Recurse -Force .gemini\skills\my-llm-wiki\.git
+
+# 3️⃣  Bootstrap the vault
+python .gemini\skills\my-llm-wiki\scripts\init_vault.py
+```
+
+</details>
+
+<details>
+<summary>🟢 OpenCode</summary>
+
+```powershell
+# 1️⃣  Create the vault and make it a git repo
+New-Item -ItemType Directory -Force ~\brain | Out-Null
+Set-Location ~\brain
+git init
+
+# 2️⃣  Install the skill (OpenCode reads from .claude\skills\)
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .claude\skills\my-llm-wiki
+Remove-Item -Recurse -Force .claude\skills\my-llm-wiki\.git
+
+# 3️⃣  Bootstrap the vault
+python .claude\skills\my-llm-wiki\scripts\init_vault.py
+```
+
+</details>
+
+<details>
+<summary>🟡 Hermes</summary>
+
+```powershell
+# 1️⃣  Create the vault and make it a git repo
+New-Item -ItemType Directory -Force ~\brain | Out-Null
+Set-Location ~\brain
+git init
+
+# 2️⃣  Install the skill
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .agents\skills\my-llm-wiki
+Remove-Item -Recurse -Force .agents\skills\my-llm-wiki\.git
+
+# 3️⃣  Bootstrap the vault
+python .agents\skills\my-llm-wiki\scripts\init_vault.py
+
+# 4️⃣  Trust the skill (Hermes only, once per vault)
+hermes skills trust
+```
+
+</details>
 
 ### What the bootstrapper does
 
