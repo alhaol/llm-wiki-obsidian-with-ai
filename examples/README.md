@@ -32,3 +32,7 @@ The log records every action:
 - `lint` — quality checks and their outcomes
 
 Recent activity shows daily maintenance: 87 entries in the last 7 days alone.
+
+---
+
+Examples from the personal wiki of **Ibrahim AbuAlhaol**.

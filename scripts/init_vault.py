@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Bootstrap an Obsidian vault as an LLM-wiki workspace.
 
+Author: Ibrahim AbuAlhaol
+
 Run this straight after cloning the skill into your vault's agent directory:
 
     mkdir -p ~/brain && cd ~/brain
@@ -34,11 +36,15 @@ from pathlib import Path
 # Agent directories that can hold a project-local skill, and which agents read
 # them. Sourced from each tool's docs; see README.md for links.
 AGENT_DIRS = {
-    ".claude/skills": ("Claude Code", "OpenCode"),
     ".agents/skills": ("OpenCode", "Hermes"),
+    ".claude/skills": ("Claude Code", "OpenCode"),
     ".hermes/skills": ("Hermes",),
     ".opencode/skills": ("OpenCode",),
 }
+
+# Between them these two cover every supported agent, so the bootstrapper makes
+# the skill reachable from both no matter which one you cloned into.
+EXPOSE_DIRS = (".agents/skills", ".claude/skills")
 
 # OpenCode enforces this on the frontmatter name, and requires it to match the
 # skill's directory name.
@@ -102,7 +108,8 @@ def ensure_git(vault: Path, do_init: bool) -> str:
             f"{vault} is not a git repo.\n"
             "Hermes locates project skills by finding the nearest ancestor with "
             ".git, so without it Hermes will not see this skill.\n"
-            "Run `git init` in the vault, or re-run with --git-init."
+            "Run `git init` there yourself, or drop --no-git-init and this "
+            "script will do it."
         )
     result = run(["git", "init"], vault)
     if result.returncode != 0:
@@ -147,24 +154,25 @@ def rename_skill(skill_root: Path) -> str:
     return f"{current} -> {dir_name}"
 
 
-def link_for_hermes(vault: Path, skill_root: Path, installed_in: str) -> str:
-    """Expose the skill under .agents/skills/, which Hermes scans.
+def expose_in(vault: Path, skill_root: Path, agent_dir: str) -> str:
+    """Make the skill reachable from <vault>/<agent_dir>/<name>.
 
-    Returns a human-readable description of the method used.
+    Prefers a symlink, falls back to a Windows junction, and copies only as a
+    last resort. Returns a human-readable description of what it did.
     """
-    if installed_in in (".agents/skills", ".hermes/skills"):
-        return "not needed (already in a Hermes path)"
+    target = vault / Path(agent_dir) / skill_root.name
 
-    target = vault / ".agents" / "skills" / skill_root.name
+    if target.resolve() == skill_root.resolve():
+        return "the install itself"
     if target.exists() or target.is_symlink():
-        return f"already present at {target.relative_to(vault)}"
+        return "already present"
 
     target.parent.mkdir(parents=True, exist_ok=True)
     relative = os.path.relpath(skill_root, target.parent)
 
     try:
         os.symlink(relative, target, target_is_directory=True)
-        return f"symlink {target.relative_to(vault)} -> {relative}"
+        return f"symlink -> {relative}"
     except (OSError, NotImplementedError):
         pass
 
@@ -176,13 +184,10 @@ def link_for_hermes(vault: Path, skill_root: Path, installed_in: str) -> str:
             text=True,
         )
         if result.returncode == 0:
-            return f"junction {target.relative_to(vault)} -> {relative}"
+            return f"junction -> {relative}"
 
     shutil.copytree(skill_root, target)
-    return (
-        f"copied to {target.relative_to(vault)} "
-        "(no symlink support; re-run this script after updating the skill)"
-    )
+    return "copied (no link support; re-run this script after editing SKILL.md)"
 
 
 def main() -> int:
@@ -201,10 +206,13 @@ def main() -> int:
         help="Fail instead of running `git init` when the vault is not a repo.",
     )
     parser.add_argument(
-        "--no-hermes",
-        dest="hermes",
+        "--no-link",
+        dest="link",
         action="store_false",
-        help="Skip exposing the skill under .agents/skills/ for Hermes.",
+        help=(
+            "Install only where the skill was cloned, instead of exposing it "
+            "from both .agents/skills/ and .claude/skills/."
+        ),
     )
     args = parser.parse_args()
 
@@ -233,8 +241,15 @@ def main() -> int:
             path.mkdir(exist_ok=True)
             steps.append((f"{name}/", "already existed" if existed else "created"))
 
-        if args.hermes:
-            steps.append(("hermes", link_for_hermes(vault, skill_root, installed_in)))
+        if args.link:
+            for agent_dir in EXPOSE_DIRS:
+                agents = ", ".join(AGENT_DIRS[agent_dir])
+                steps.append(
+                    (
+                        f"{agent_dir}/",
+                        f"{expose_in(vault, skill_root, agent_dir)}  [{agents}]",
+                    )
+                )
 
         gitignore = vault / ".gitignore"
         if gitignore.exists():

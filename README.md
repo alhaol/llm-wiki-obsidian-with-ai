@@ -266,7 +266,7 @@ The underlying idea is Andrej Karpathy's: the LLM writes and maintains the wiki,
 the human reads and asks questions, and the wiki is a persistent, compounding
 artifact.
 
-MIT, © 2026 Ibrahim Abualhaol — see [LICENSE](LICENSE).
+MIT, © 2026 Ibrahim AbuAlhaol — see [LICENSE](LICENSE).
 
 The vendored skill files remain under their own MIT license:
 
