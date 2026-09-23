@@ -38,13 +38,14 @@ from pathlib import Path
 AGENT_DIRS = {
     ".agents/skills": ("OpenCode", "Hermes"),
     ".claude/skills": ("Claude Code", "OpenCode"),
+    ".gemini/skills": ("Gemini CLI",),
     ".hermes/skills": ("Hermes",),
     ".opencode/skills": ("OpenCode",),
 }
 
-# Between them these two cover every supported agent, so the bootstrapper makes
-# the skill reachable from both no matter which one you cloned into.
-EXPOSE_DIRS = (".agents/skills", ".claude/skills")
+# Between them these three cover every supported agent, so the bootstrapper makes
+# the skill reachable from all of them no matter which one you cloned into.
+EXPOSE_DIRS = (".agents/skills", ".claude/skills", ".gemini/skills")
 
 # OpenCode enforces this on the frontmatter name, and requires it to match the
 # skill's directory name.
@@ -278,7 +279,7 @@ Next steps
      relative to the working directory, so always launch from there:
 
        cd {vault}
-       claude            # or: opencode
+       claude            # or: gemini, opencode
        hermes skills trust    # Hermes only, once per vault
 
   3. Ask it to ingest something:

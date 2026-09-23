@@ -98,7 +98,7 @@ If you use the holding folder, add this to SKILL.md:
 ## What does not need changing
 
 - **Dot-directories.** Obsidian ignores any folder whose name starts with `.`,
-  so `.claude/`, `.agents/` and `.hermes/` never appear in search, the file
+  so `.claude/`, `.gemini/`, `.agents/` and `.hermes/` never appear in search, the file
   explorer, or the graph. The skill's own `SKILL.md`, `references/`, `examples/`
   and `tests/` stay out of your notes.
 - **Tables in `wiki/index.md`.** Obsidian renders GitHub-flavored markdown

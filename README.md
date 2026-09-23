@@ -14,7 +14,7 @@ Two folders, both visible in Obsidian:
 The agent instructions live in a dot-directory, so none of the machinery shows
 up in your notes.
 
-Works with **Claude Code**, **OpenCode**, and **Hermes** from a single install.
+Works with **Claude Code**, **Gemini CLI**, **OpenCode**, and **Hermes** from a single install.
 
 ---
 
@@ -24,6 +24,7 @@ Works with **Claude Code**, **OpenCode**, and **Hermes** from a single install.
   needed)
 - **Obsidian**
 - At least one agent CLI: [Claude Code](https://claude.com/claude-code),
+  [Gemini CLI](https://github.com/google-gemini/gemini-cli),
   [OpenCode](https://opencode.ai), or [Hermes](https://github.com/NousResearch/hermes-agent)
 
 ---
@@ -99,7 +100,7 @@ graph and search results.
 Obsidian ignores any folder whose name starts with a dot. `.claude/` keeps the
 skill invisible to the vault while the agents still load it.
 
-That is also why this setup puts **no `CLAUDE.md` or `AGENTS.md` at the vault
+That is also why this setup puts **no `CLAUDE.md`, `GEMINI.md` or `AGENTS.md` at the vault
 root** — those are `.md` files at the top level of your vault, so they would show
 up as notes too. Put your customizations in the copied `SKILL.md` instead. If you
 do want a root `AGENTS.md`, add it to Obsidian's Settings → Files & Links →
@@ -109,11 +110,12 @@ Excluded files.
 
 ## Per-agent notes
 
-One clone serves all three, because the tools' search paths overlap.
+One clone serves all four, because the tools' search paths overlap.
 
 | Agent | Reads the skill from | Extra step |
 |---|---|---|
 | Claude Code | `.claude/skills/` | none |
+| Gemini CLI | `.gemini/skills/` or `.agents/skills/` | none |
 | OpenCode | `.claude/skills/` | none |
 | Hermes | `.agents/skills/` (created by the bootstrapper) | `hermes skills trust` |
 
@@ -244,7 +246,7 @@ into `wiki/`. Set Settings → Files & Links → Default location for new attach
 "Use [[Wikilinks]]" off; lint only understands markdown links.
 
 **`init_vault.py` says it is not inside a recognized agent directory.** The clone
-must land in `<vault>/.claude/skills/<name>/` (or `.agents/`, `.hermes/`,
+must land in `<vault>/.claude/skills/<name>/` (or `.gemini/`, `.agents/`, `.hermes/`,
 `.opencode/`). Move it there, or pass `--vault ~/brain`.
 
 ---
