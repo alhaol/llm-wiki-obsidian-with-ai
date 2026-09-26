@@ -282,9 +282,11 @@ def contains(haystack: str, candidate: Candidate) -> bool:
 def source_content(path: Path) -> str:
     """Raw file body with the metadata header removed. Collection
     metadata (Source/Collected/Published) is bookkeeping, not evidence;
-    letting it match candidates would false-pass dates and years."""
+    letting it match candidates would false-pass dates and years.
+    Hashtags in raw text are escaped (\\#) so Obsidian does not read them
+    as tags; unescape them so quotes still match."""
     document = parse_document(path.read_text(encoding="utf-8"))
-    return normalize("\n".join(document.body))
+    return normalize("\n".join(document.body).replace("\\#", "#"))
 
 
 def check_article(article: Path, root: Path) -> tuple[list[str], list[str]]:

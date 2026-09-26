@@ -1,12 +1,12 @@
 ---
 name: karpathy-llm-wiki
 author: Ibrahim AbuAlhaol
-description: "Use when building or maintaining a personal LLM-powered knowledge base. Triggers: ingesting sources into a wiki, querying wiki knowledge, linting wiki quality, 'add to wiki', 'what do I know about', or any mention of 'LLM wiki' or 'Karpathy wiki'."
+description: "Use when building or maintaining a personal LLM-powered knowledge base. Triggers: ingesting sources into a wiki, fetching sources into raw/, organizing or emptying the + inbox, filing notes into the vault, querying wiki knowledge, linting wiki quality, '/ingest', '/fetch', '/organize', naming or renaming vault notes, HOME.md or ME.md, 'add to wiki', 'what do I know about', or any mention of 'LLM wiki' or 'Karpathy wiki'."
 ---
 
 # Karpathy LLM Wiki
 
-Build and maintain a personal knowledge base using LLMs. You manage two directories: `raw/` (immutable source material) and `wiki/` (compiled knowledge articles). Sources go into raw/, you compile them into wiki articles, and the wiki compounds over time.
+Build and maintain a personal knowledge base using LLMs. You manage two directories: `raw/` (immutable source material) and `wiki/` (compiled knowledge articles). Sources go into raw/, you compile them into wiki articles, and the wiki compounds over time. You also empty the `+/` inbox, where the human drops old files, notes, and assets: you file each item into raw/ (then compile it), into the human's own folders, or into `assets/`.
 
 Core ideas from Karpathy:
 - "The LLM writes and maintains the wiki; the human reads and asks questions."
@@ -18,9 +18,15 @@ Three layers, all under the user's project root:
 
 **raw/** — Immutable source material. You read, never modify. Organized by topic subdirectories (e.g., `raw/machine-learning/`).
 
-**wiki/** — Compiled knowledge articles. You have full ownership. Organized by topic subdirectories, one level only: `wiki/<topic>/<article>.md`. Contains two special files:
+**wiki/** — Compiled knowledge articles. You have full ownership. Organized by topic subdirectories, one level only: `wiki/<topic>/<article>_md.md` (file names follow the Naming Convention below). Contains two special files:
 - `wiki/index.md` — Global index. One row per article, grouped by topic, with link + summary + Updated date.
 - `wiki/log.md` — Append-only operation log.
+
+**+/** — The inbox. The human drops anything here: old notes, clipped pages, papers, images, exports. You own it only while running Organize, which moves every item out and leaves `+/` empty (just its `.gitkeep`). Nothing lives in `+/`.
+
+**assets/** — Non-markdown attachments (images, PDFs, audio, office files), flat, one level. Obsidian saves pasted attachments here too (see `references/obsidian-conventions.md`).
+
+**HOME.md** and **ME.md** — The human's two files at the vault root (see below). **GUIDE.html** — a styled copy of the vault guide at the root, for the human; you never edit it.
 
 **SKILL.md** (this file) — Schema layer. Defines structure and workflow rules.
 
@@ -28,14 +34,69 @@ Templates live in `references/` relative to this file. Read them when you need t
 
 ### Vault Guide
 
-`Systems/vault-guide.md`, when it exists, is the vault's folder and tag charter. The human wrote it and follows it too. Read it before any Ingest, Archive, or Lint, and before writing any note outside raw/ and wiki/. How the two fit together:
+`Systems/vault-guide.md`, when it exists, is the vault's folder and tag charter. The human wrote it and follows it too. Read it before any Ingest, Organize, Archive, or Lint, and before writing any note outside raw/ and wiki/. How the two fit together:
 
 - **This file wins on structure** in raw/ and wiki/: file names, topic directories, metadata blockquotes, index, log.
 - **The guide wins on tags.** Give every new or updated wiki article (archive pages included) YAML frontmatter above the H1 with the guide's mandatory facets, written without `#` (for example, `tags: [afpish/professional, status/progress, urgency/medium, time/ongoing, type/paper]`). Never tag raw/ files, `wiki/index.md`, or `wiki/log.md`.
-- **Use only values the guide lists.** If a note needs a new tag value or folder, propose adding it to the guide; do not invent one. Folders outside raw/ and wiki/ belong to the human: write there only when asked.
-- During Lint, report wiki articles missing mandatory facets or using values the guide does not list (judgment report, no auto-fix).
+- **Use only values the guide lists, and clear the rest.** A tag the guide does not list (any spelling, case, or facet it does not define: `#work`, `#Status/Progress`, `#todo`) does not stay on a note you write or file. Map it to the guide's value when the meaning matches (`#paper` → `type/paper`, `#work` → `afpish/professional`); otherwise drop it. If a dropped value keeps coming up, propose adding it to the guide; do not invent one. The same holds for folders. Folders outside raw/ and wiki/ belong to the human: write there only when asked. Running Organize is that ask for the items in `+/`, and nothing else: it files them into those folders but never edits notes already there.
+- **Organize tags the human's notes too.** Every markdown note Organize files outside raw/ gets the same mandatory facets in its frontmatter.
+- During Lint, check the whole vault against the guide with `scripts/check_guide.py` (see Lint → Guide compliance).
 
-If the guide is absent, skip all of this.
+If the guide is absent, skip all of this. Organize then files only into raw/ and assets/, and asks where everything else goes.
+
+### HOME.md and ME.md
+
+Two files at the vault root that the human writes and maintains. They are how you learn what the human cares about, and how you point their attention at what matters. Templates: `references/home-template.md`, `references/me-template.md`.
+
+- **ME.md** — who the human is, their priorities, and their preferences for how you write, file, tag, and talk to them.
+- **HOME.md** — their front page: current focus, key notes, areas, and topics they are watching.
+
+Rules:
+
+- **Read both before every workflow** (Ingest, Organize, Query, Archive, Lint), when they exist. Follow ME.md's preferences wherever this file leaves you a choice (summary style, how much to ask, language); this file and the vault guide still win on structure and tags.
+- **Never modify either without the human's explicit yes**, given in chat for that specific change. Propose the exact lines instead. With a yes, append to ME.md or edit HOME.md exactly as proposed, nothing more. Approval does not carry over to the next change.
+- **Surface, do not bury.** At the end of an Ingest, Organize, or Lint, add a short **Suggested for HOME.md** list when something deserves the human's attention: a new or heavily updated note that touches their Focus or Watching topics, or a note they will clearly return to. Give each as a ready-to-paste line with a relative link. When the human states a lasting preference in conversation, offer it as **Suggested for ME.md**. Skip both lists when there is nothing worth it; a padded list trains the human to ignore it.
+- Never tag, rename, or move them. If either is missing, work without it and do not create it unasked (the bootstrapper creates both).
+
+### Naming Convention
+
+Every file you create, move, or rename outside `raw/` and `+/` is named:
+
+```
+{word}_{word}[_{word}[_{word}[_{word}]]]_{identifier}.{extension}
+```
+
+- **Words**: two to five, lowercase `a-z` and `0-9`, chosen from the content — what the note is about, not when it was made or where it came from. `transformer_attention_mechanism`, not `notes_about_stuff`.
+- **Identifier**: the file's type, which is its extension: `md` for notes, `png`, `jpg`, `pdf`, `svg`, `mp3`, `canvas`, and so on. Excalidraw drawings use `excali` (`login_flow_sketch_excali.excalidraw.md`).
+- **Daily notes** start with the date as three words: `2026_09_26_standup_md.md` (date plus one or two content words).
+- **Collisions**: never overwrite. Pick more specific words first; add a number word only as a last resort (`attention_heads_2_md.md`).
+- **Exempt**: `raw/` (sources keep Fetch's date-slug names), `+/` (transient), dot-directories, and the fixed files `HOME.md`, `ME.md`, `GUIDE.html`, `Systems/vault-guide.md`, `wiki/index.md`, `wiki/log.md`.
+
+Examples: `wiki/machine-learning/transformer_architecture_md.md`, `Concepts/second_order_thinking_md.md`, `Areas/Side-Business/side_business_q4_plan_md.md`, `assets/garden_bed_layout_png.png`.
+
+`scripts/check_names.py <project-root> [paths...]` checks names mechanically; run it on every file you name, and during Lint. A rename is also a link change: update every link to the old name (markdown links and `[[wikilinks]]`) in the same step.
+
+### Compliance Gate
+
+Everything Ingest compiles into wiki/ and everything Organize files out of `+/` follows the system in full: the guide's folders, its tags, and the Naming Convention. It is not "later cleanup"; a workflow is not finished until its files pass the gate.
+
+For the files a workflow wrote or moved (vault-relative paths):
+
+1. **Tags.** Give each note outside raw/ its mandatory facets from the guide, mapping the note's existing tags where the meaning matches. Then clear everything else:
+   ```
+   python3 <skill-dir>/scripts/check_guide.py <project-root> <paths...> --strip
+   ```
+   It reads the allowed values, facet counts, and folders from the guide itself. `--strip` removes unlisted frontmatter tags, un-tags unlisted inline hashtags (the word stays, the `#` goes; a line of nothing but tags is removed), and in raw/ drops frontmatter tags and escapes inline hashtags to `\#`, which Obsidian renders the same but no longer indexes. It never adds tags.
+2. **Check.** Run both checkers on the same paths and fix whatever they report — missing facets, a wrong folder, a bad name — then run them again:
+   ```
+   python3 <skill-dir>/scripts/check_guide.py <project-root> <paths...>
+   python3 <skill-dir>/scripts/check_names.py <project-root> <paths...>
+   ```
+3. **Report** the tags you mapped and dropped, grouped by value, in your final summary.
+
+Both checks must exit 0. If one cannot pass without the human (a folder the guide lacks, say), stop and ask; do not leave the file half-compliant.
+
+The gate never touches HOME.md, ME.md, or notes the workflow did not write.
 
 ### Initialization
 
@@ -45,12 +106,27 @@ Triggers only on the first Ingest. Check whether `raw/` and `wiki/` exist. Creat
 - `wiki/` directory (with `.gitkeep`)
 - `wiki/index.md` — heading `# Knowledge Base Index`, empty body
 - `wiki/log.md` — heading `# Wiki Log`, empty body
+- `+/` directory (with `.gitkeep`) and `assets/` directory
 
-If Query or Lint cannot find the wiki structure, tell the user: "Run an ingest first to initialize the wiki." Do not auto-create.
+Organize also triggers this check. If Query or Lint cannot find the wiki structure, tell the user: "Run an ingest first to initialize the wiki." Do not auto-create.
 
 ## The Grounding Invariant
 
 Every load-bearing fact in wiki/ — numbers, dates, direct quotes — exists verbatim in the raw/ files linked by that article's Raw field. Compile *establishes* this invariant (locate before you write); lint *verifies* it (`scripts/check_evidence.py` greps the high-signal literals — suffixed or large numbers, decimals, ISO dates, longer quotes — in the linked raws; the compile-time locate-before-write rule covers the rest). Because raw/ is immutable, a verified article stays verified; the script re-checks the whole wiki in seconds, so there is no incremental state to maintain.
+
+---
+
+## Commands
+
+Three slash commands, installed into the vault by `scripts/init_vault.py` from this skill's `commands/` directory, map onto the workflows below. Every supported agent gets all three: command files for Claude Code (`.claude/commands/`), OpenCode (`.opencode/commands/`), Gemini CLI (`.gemini/commands/`, TOML) and Pi (`.pi/prompts/`), and a small skill per command for Hermes (`.hermes/skills/<command>/`). They are shortcuts; the same requests in plain words run the same workflows.
+
+`commands/` is the single source. After changing it (or this skill), re-run `init_vault.py`: it refreshes every generated file (they carry a `generated by init_vault.py` stamp) in every agent and leaves unstamped files, the human's own, alone. Never hand-edit one agent's copy to change a command.
+
+| Command | Runs | Writes |
+|---|---|---|
+| `/fetch <source>` | Ingest → Fetch only | raw/, log |
+| `/ingest <source>` | Ingest, all steps. No argument: compile the backlog of unreferenced raw files | raw/, wiki/, index, log |
+| `/organize [--dry-run] [+/paths]` | Organize | the destinations of `+/` items, index, log |
 
 ---
 
@@ -70,6 +146,7 @@ Fetch a source into raw/, then compile it into wiki/ — unless the source adds 
    - If a file with the same name already exists, append a numeric suffix (e.g., `descriptive-slug-2.md`).
    - Include metadata header: source URL, collected date, published date.
    - Preserve original text. Clean formatting noise. Do not rewrite opinions.
+   - Carry no tags: drop any `tags:` frontmatter key, and escape inline hashtags as `\#` so Obsidian does not index the source's hashtags as vault tags (`check_guide.py --strip` does both).
 
    See `references/raw-template.md` for the exact format.
 
@@ -89,7 +166,7 @@ New, Update, and Disputed may be combined. No material is exclusive.
 Determine where the new content belongs:
 
 - **Same core thesis as existing article** → Merge into that article. Add the new source to Sources/Raw. Update affected sections.
-- **New concept** → Create a new article in the most relevant topic directory. Name the file after the concept, not the raw file.
+- **New concept** → Create a new article in the most relevant topic directory. Name the file after the concept, not the raw file, following the Naming Convention (`transformer_architecture_md.md`).
 - **Spans multiple topics** → Place in the most relevant directory. Add See Also cross-references to related articles elsewhere.
 
 These are not mutually exclusive. A single source may warrant merging into one article while also creating a separate article for a distinct concept it introduces. In all cases, check for factual conflicts: if the new source contradicts existing content, mark the contested claims with a **Status: Disputed** block (see `references/article-template.md`). When the conflicting content lives in separate articles, mark both and cross-link them.
@@ -110,6 +187,8 @@ When the new source supersedes or contradicts an existing claim, keep the old cl
 Archive pages are never cascade-updated (they are point-in-time snapshots).
 
 ### Post-Ingest
+
+Run the Compliance Gate on the raw file and every article you created or updated: the articles' tags come from the guide only, their names from the Naming Convention, their folders are `wiki/<topic>/`.
 
 Update `wiki/index.md`: add or update entries for every touched article. When adding a new topic section, include a one-line description. The Updated date reflects when the article's knowledge content last changed, not the file system timestamp. See `references/index-template.md` for format.
 
@@ -139,6 +218,99 @@ Use only when the user explicitly asks to research a topic or gather sources int
 2. For any core claim you expect to conclude, deliberately search the opposing side: failures, criticism, failed replications.
 3. Save selected sources to raw/ as usual. Searching may run in parallel; compilation must not — compile one source at a time, because index.md, log.md, and cascade updates are shared state.
 
+### Fetch only
+
+When the user asks only to fetch or save a source (`/fetch`), run Fetch and stop: no Triage, no Compile, no index change. Append to `wiki/log.md`:
+
+```
+## [YYYY-MM-DD] fetch | <project-root-relative raw file path>
+```
+
+The raw file stays unreferenced, so Lint lists it as backlog until an Ingest compiles it. `/ingest` with no argument compiles the whole backlog: every unreferenced raw file, skipping Fetch.
+
+---
+
+## Organize
+
+Empty the `+/` inbox: decide where each item belongs, move it there, tag it, compile whatever is knowledge, and leave `+/` empty. Triggers: `/organize`, "organize the inbox", "file what's in +", "clean up +".
+
+The inbox holds a mix: the human's own old notes, clipped articles, papers, exports from other apps, images. Nothing stays and nothing is lost. Items only move, except exact duplicates (step 1).
+
+### 1. Inventory
+
+Read the vault guide, then run:
+
+```
+python3 <skill-dir>/scripts/inbox.py list <project-root>
+```
+
+It lists every file under `+/` (dotfiles skipped) with a first-guess kind — `clip` (markdown that already has the raw header), `note` (other markdown), `asset` (everything else) — and flags byte-identical duplicates of files already in the vault. Read every note and clip before classifying it; the kind is a hint, not a verdict. Duplicates are the one thing Organize deletes: remove them from `+/` and list them in the log.
+
+### 2. Classify
+
+Give each item exactly one destination. Decide by what the content *is*, not by how the human happened to write it:
+
+| Destination | What belongs there |
+|---|---|
+| `raw/<topic>/` | Knowledge from outside the human's head: clipped or copied articles, paper text, docs, transcripts, someone else's post — and the human's notes *about* such material (reading, lecture, or course notes). Compiled into wiki/ in step 4. |
+| `Daily/` | A capture tied to one day: journal entry, day log, the day's meeting notes. Needs a date from the note itself (file name, heading, or frontmatter). No date in the note → not Daily. |
+| `Fleeting/` | Rough, unfinished thoughts and scraps with no clear home yet. |
+| `Areas/<area>/` | Work on an active project or domain the guide lists: plans, decisions, logs, specs. |
+| `Concepts/` | The human's own distilled idea: a principle, pattern, framework, or mental model, reusable across projects. |
+| `Systems/` | Notes about the vault itself: MOCs, processes, conventions. |
+| `Archive/` | Material from a finished or abandoned project. |
+| `assets/` | Every non-markdown file. A PDF or document that is a *source* also gets a raw/ extract (step 3). |
+
+Never file straight into wiki/: wiki articles come only from Compile. Use the guide's folder list; if an item needs a folder the guide lacks (a new area, say), propose adding it rather than creating it.
+
+When the right destination is genuinely unclear, do not guess. Collect every unclear item and ask about all of them in one question, with your best suggestion for each. Everything you are sure about can proceed.
+
+### 3. Plan, then file
+
+Show the plan as a table — item, destination path, tags, and for raw items the topic — before moving anything. With `--dry-run`, stop here.
+
+Then file in this order, so links can be rewritten against final paths:
+
+1. **Assets** → `assets/`, renamed to the Naming Convention after what the file shows or contains (`IMG_2041.jpg` → `garden_bed_layout_jpg.jpg`).
+2. **Human notes** (Daily, Fleeting, Areas, Concepts, Systems, Archive):
+   - File name: renamed to the Naming Convention from the content (`Untitled 3.md` → `pricing_experiment_ideas_md.md`). Keep the human's words when they already describe the note. Daily notes start with their date: `2026_09_20_client_call_md.md`.
+   - Body: keep it verbatim. Only fix links (below).
+   - Frontmatter: add the guide's mandatory facets as `tags:` (values only from the guide), merged into any frontmatter already there. Existing tags the guide lists stay; the rest are mapped to guide values or cleared by the Compliance Gate, frontmatter and inline alike.
+3. **Raw items** → `raw/<topic>/`, following Fetch's naming and topic rules:
+   - Raw files keep Fetch's date-slug names, not the Naming Convention.
+   - A clip that already has the raw header: move it as is.
+   - Other text: wrap it in the raw template. Source is the origin if the text names one; otherwise `Inbox file: <original file name>` (add `personal notes` when the human wrote them). Published is the source's date, or `Unknown`. Preserve the text.
+   - A source document in assets/ (a PDF paper, say): extract its text into a raw file whose Source links to the asset, for example `[paper.pdf](../../assets/paper.pdf)`.
+   - Never tag raw files: strip any tags the clip or note carried (Fetch's rule).
+
+**Links.** Nearly every item is renamed, so every link to it must change. Update `[[wikilinks]]` and `![[embeds]]` to the new name (Obsidian resolves them by file name). Relative markdown links (`[x](path)`, `![x](path)`) between inbox items or to assets must be rewritten to the new relative paths. In raw files, fix only paths, never text.
+
+**Collisions.** Never overwrite. In raw/, append a numeric suffix as Fetch does; elsewhere, follow the Naming Convention's collision rule. Then run `scripts/check_names.py` on the paths you wrote and fix anything it reports.
+
+### 4. Compile
+
+Run Triage, Compile, Cascade Updates, and Post-Ingest for each new raw file, one at a time, exactly as in Ingest. No-material items stay in raw/ and are logged as usual.
+
+### 5. Close out
+
+Append to `wiki/log.md`, before the ingest entries it caused:
+
+```
+## [YYYY-MM-DD] organize | <N> items from +/
+- <destination path> <- +/<original path>
+- Duplicate removed: +/<path> (same as <vault path>)
+```
+
+One `<-` line per filed item, raw ones included. Run the Compliance Gate on every filed path (step 4 already gated the wiki articles). Then run:
+
+```
+python3 <skill-dir>/scripts/inbox.py finish <project-root>
+```
+
+It removes empty subfolders of `+/`, keeps `+/.gitkeep`, and fails if any file remains. Organize is done only when it reports `+/ is empty`. If something is left because you are waiting on the human's answer, say so and list it. When Organize was scoped to specific paths, skip `finish` and report only those items.
+
+End with **Suggested for HOME.md** (see HOME.md and ME.md) when something you filed deserves the human's attention.
+
 ---
 
 ## Query
@@ -162,11 +334,12 @@ When the user explicitly asks to archive or save the answer to the wiki:
 1. Write the answer as a new wiki page. See `references/archive-template.md`. When converting conversation citations to the archive page, rewrite project-root-relative paths (e.g., `wiki/topic/article.md`) to file-relative paths (e.g., `../topic/article.md` or `article.md` for same-directory).
    - Sources: markdown links to the wiki articles cited in the answer.
    - No Raw field (content does not come from raw/).
-   - File name reflects the query topic, e.g., `transformer-architectures-overview.md`.
+   - File name reflects the query topic and follows the Naming Convention, e.g., `transformer_architectures_overview_md.md`.
    - Place in the most relevant topic directory.
 2. Always create a new page. Never merge into existing articles (archive content is a synthesized answer, not raw material).
-3. Update `wiki/index.md`. Prefix the Summary with `[Archived]`.
-4. Append to `wiki/log.md`:
+3. Run the Compliance Gate on the new page (guide tags, Naming Convention, `wiki/<topic>/`).
+4. Update `wiki/index.md`. Prefix the Summary with `[Archived]`.
+5. Append to `wiki/log.md`:
    ```
    ## [YYYY-MM-DD] query | Archived: <page title>
    ```
@@ -212,6 +385,12 @@ Run these mechanically with `python3 <skill-dir>/scripts/check_evidence.py <proj
 
 **Unreferenced raw files** — files logged with a No material disposition are excluded; everything else is a genuine backlog reminder.
 
+**Inbox** — run `scripts/inbox.py list`; if `+/` holds anything, report the item count and suggest Organize.
+
+**Guide compliance** — run `python3 <skill-dir>/scripts/check_guide.py <project-root>` (tags, facet counts, folders). In wiki/, which you own, clear unlisted tags with `--strip` on the affected articles and add missing facets: that is a safe fix. Everywhere else (the human's notes, raw/), report and offer the fix; apply it only with the human's yes.
+
+**File names** — run `python3 <skill-dir>/scripts/check_names.py <project-root>` and report violations. Offer to rename wiki/ articles (you own them): with a yes, rename, then update `wiki/index.md` and every link to them. Files in the human's folders get a proposed name only; rename them only with the human's yes, updating links the same way.
+
 ### Judgment Reports (no fixes)
 
 These rely on your judgment. Report findings without auto-fixing:
@@ -225,6 +404,7 @@ These rely on your judgment. Report findings without auto-fixing:
 - Missing cross-topic references
 - Concepts frequently mentioned but lacking a dedicated page
 - Archive pages whose cited source articles have been substantially updated since archival
+- Links in HOME.md that point to missing files (propose the fix; HOME.md is the human's)
 
 ### Post-Lint
 
@@ -239,7 +419,10 @@ Append to `wiki/log.md`:
 ## Conventions
 
 - Standard markdown with relative links throughout.
+- File names follow the Naming Convention everywhere except raw/, +/, and the fixed files.
+- Tags come only from the guide; raw/ carries none. Every Ingest and Organize passes the Compliance Gate.
+- HOME.md and ME.md change only with the human's explicit yes.
 - wiki/ supports one level of topic subdirectories only. No deeper nesting.
 - Today's date for log entries, Collected dates, and Archived dates. Updated dates reflect when the article's knowledge content last changed. Published dates come from the source (use `Unknown` when unavailable).
 - Inside wiki/ files, all markdown links use paths relative to the current file. In conversation output, use project-root-relative paths (e.g., `wiki/topic/article.md`).
-- Ingest updates both `wiki/index.md` and `wiki/log.md` (a No material ingest updates only the log). Archive (from Query) updates both. Lint updates `wiki/log.md` (and `wiki/index.md` only when auto-fixing index entries). Plain queries do not write any files.
+- Ingest updates both `wiki/index.md` and `wiki/log.md` (a No material ingest updates only the log). Fetch only updates the log. Organize updates the log, and the index for the raw items it compiles. Archive (from Query) updates both. Lint updates `wiki/log.md` (and `wiki/index.md` only when auto-fixing index entries). Plain queries do not write any files.

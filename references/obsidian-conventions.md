@@ -1,7 +1,7 @@
 # Obsidian conventions
 
 The skill was written for a plain folder of markdown. Running it inside an
-Obsidian vault mostly just works, but four things need a decision. Paste the
+Obsidian vault mostly just works, but five things need a decision. Paste the
 parts you want into your copy of `SKILL.md` so the rules travel with the skill.
 
 ## 1. Keep markdown links, not wikilinks
@@ -58,7 +58,9 @@ an unreferenced raw file. Both are false positives that recur on every lint.
 In Obsidian: Settings → Files & Links → **"Default location for new
 attachments" → "In the folder specified below"** → `assets`.
 
-`assets/` sits outside both trees, so neither lint category sees it.
+`assets/` sits outside both trees, so neither lint category sees it. It is the
+same folder Organize files attachments into, so pasted and organized files end
+up together.
 
 ## 4. Web Clipper should write the raw template
 
@@ -70,9 +72,9 @@ different, and the agent has to infer the source URL from an unexpected place.
 
 Configure the clipper to match. In Web Clipper settings → Templates:
 
-- **Note location**: `raw/{{date:YYYY}}-unsorted` — clip into a holding folder
-  and let the agent file it into the right topic on ingest. Clipping straight
-  into a topic directory works too, but then you are doing the triage by hand.
+- **Note location**: `+` — clip into the inbox and let `/organize` file it into
+  the right raw/ topic and compile it. Clipping straight into a topic directory
+  works too, but then you are doing the triage by hand.
 - **Note name**: `{{date:YYYY-MM-DD}}-{{title|slugify}}`
 - **Template body**:
 
@@ -89,11 +91,22 @@ Configure the clipper to match. In Web Clipper settings → Templates:
 That produces exactly the shape `references/raw-template.md` specifies, so a
 clipped file and an agent-fetched file are indistinguishable.
 
-If you use the holding folder, add this to SKILL.md:
+Organize recognizes a clip by that header (`scripts/inbox.py` lists it as
+`clip`) and moves it into raw/ as is, with no re-wrapping.
 
-> Before any ingest, check `raw/*-unsorted/` for clipped files. Treat each as an
-> already-fetched source: skip the Fetch step, move the file into the correct
-> topic directory, then run Triage and Compile normally.
+## 5. New notes should start with a convention name
+
+Obsidian names new notes `Untitled`, and pasted images `Pasted image
+20260926...png`. Neither follows the naming convention (SKILL.md, "Naming
+Convention"), so lint will list them until they are renamed.
+
+Rename a note as soon as you know what it is about
+(`second_order_thinking_md.md`), or leave it and drop it into `+/` —
+`/organize` names it for you. For pasted images, the "Paste image rename" or
+similar community plugins can prompt for a name on paste. If you use the
+Excalidraw plugin, set its drawing file name to something you will replace,
+and keep the `.excalidraw.md` extension; the identifier is `excali`
+(`login_flow_sketch_excali.excalidraw.md`).
 
 ## What does not need changing
 

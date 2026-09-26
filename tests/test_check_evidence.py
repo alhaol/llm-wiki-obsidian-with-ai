@@ -719,7 +719,7 @@ EXAMPLES_DIR = Path(__file__).resolve().parent.parent / "examples"
 class ExamplesSmokeTest(WikiTestCase):
     def test_examples_have_zero_suspects(self):
         raw_src = EXAMPLES_DIR / "2026-03-19-claude-code-statusline-landscape.md"
-        article_src = EXAMPLES_DIR / "claude-code-statusline-landscape.md"
+        article_src = EXAMPLES_DIR / "claude_code_statusline_landscape_md.md"
         (self.root / "raw" / "ai-coding-tools").mkdir(parents=True)
         (self.root / "raw" / "ai-coding-tools" / raw_src.name).write_text(raw_src.read_text(encoding="utf-8"), encoding="utf-8")
         (self.root / "wiki" / "ai-coding-tools").mkdir(parents=True)

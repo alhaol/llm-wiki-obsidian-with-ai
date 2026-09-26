@@ -6,7 +6,7 @@ This directory contains real files from a knowledge base maintained with `karpat
 
 | File | What it shows |
 |------|---------------|
-| `claude-code-statusline-landscape.md` | Compiled wiki article with structured data (tables, citations, cross-references) |
+| `claude_code_statusline_landscape_md.md` | Compiled wiki article with structured data (tables, citations, cross-references) |
 | `2026-03-19-claude-code-statusline-landscape.md` | Raw source material before compilation |
 | `ai-coding-tools-index.md` | One topic section of the global index (summary + Updated per article) |
 | `log-sample.md` | Sample entries from operation log (all current entry types) |
@@ -18,7 +18,7 @@ This directory contains real files from a knowledge base maintained with `karpat
 - Unstructured content
 - Metadata header (Source, Collected, Published dates)
 
-**Compiled article** (`claude-code-statusline-landscape.md`):
+**Compiled article** (`claude_code_statusline_landscape_md.md`):
 - Structured sections (Overview, Competitive Landscape, User Pain Points)
 - Tables synthesized from multiple sources
 - Cross-references to other wiki articles

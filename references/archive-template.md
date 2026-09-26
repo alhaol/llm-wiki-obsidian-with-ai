@@ -1,6 +1,6 @@
 # {Title}
 
-> Sources: [{Cited Article 1}](article1.md); [{Cited Article 2}](../other-topic/article2.md)
+> Sources: [{Cited Article 1}](article_one_md.md); [{Cited Article 2}](../other-topic/article_two_md.md)
 {Paths must be relative to this file: same-topic = filename only, cross-topic = ../other-topic/filename.md}
 > Archived: {YYYY-MM-DD}
 
@@ -17,5 +17,5 @@
 ## See Also
 
 {Cross-references to related wiki articles. Use relative links:
-- Same topic: [Other Article](other-article.md)
-- Different topic: [Other Article](../other-topic/other-article.md)}
+- Same topic: [Other Article](other_article_md.md)
+- Different topic: [Other Article](../other-topic/other_article_md.md)}

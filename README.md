@@ -8,25 +8,36 @@ research — the agent compiles them into structured wiki pages, keeps cross-ref
 up to date, and makes sure every fact traces back to a source.
 
 ```
- You ──► paste a URL ──► Agent fetches, compiles, indexes ──► You read in Obsidian
+ You ──► paste a URL ──────────► Agent fetches, compiles, indexes ──► You read in Obsidian
+ You ──► drop old files in +/ ─► Agent files, tags, compiles, empties +/
 ```
 
 ### ✨ Key features
 
 - 📥 **Ingest** — feed the agent a URL or text; it saves the source, writes a
   structured wiki article, and updates the index
+- 🗂️ **Organize** — drop old notes, clipped pages, papers, and images into the
+  `+/` inbox; the agent files each one into the right folder, tags it, compiles
+  the knowledge into the wiki, and leaves `+/` empty
+- ⌨️ **Slash commands** — `/ingest`, `/fetch`, and `/organize` in all five
+  agents, re-synced from the skill whenever you re-run the bootstrapper
 - 🔍 **Query** — ask what you know; the agent searches your wiki and answers
   with citations
 - 🩺 **Lint** — the agent audits the wiki for broken links, stale claims, and
   facts that don't match their sources
 - 🔒 **Grounded** — every number, date, and quote in your wiki must exist
   verbatim in the source file it cites. Verified once, verified forever.
-- 🧭 **Vault guide** — one folder-and-tag charter that you and the agent both
-  follow, so the vault stays organized as it grows
+- 🧭 **Vault guide** — one folder, naming, and tag charter that you and the
+  agent both follow, so the vault stays organized as it grows
+- 🔤 **Readable names** — every note and file is named from its content plus a
+  type identifier (`second_order_thinking_md.md`, `garden_bed_layout_png.png`)
+- 🏠 **HOME and ME** — two notes you own: `HOME.md` is your front page,
+  `ME.md` tells the agent who you are. It reads both, suggests updates, and
+  never edits them without your yes
 
 ### 🤖 Works with any agent
 
-One install, four supported agents:
+One install, five supported agents, all sharing the same skill and commands:
 
 | | Agent | Skills directory |
 |---|---|---|
@@ -34,6 +45,7 @@ One install, four supported agents:
 | 🔵 | [Gemini CLI](https://github.com/google-gemini/gemini-cli) | `.gemini/skills/` |
 | 🟢 | [OpenCode](https://opencode.ai) | `.claude/skills/` |
 | 🟡 | [Hermes](https://github.com/NousResearch/hermes-agent) | `.agents/skills/` |
+| 🟠 | [Pi](https://pi.dev) | `.agents/skills/` |
 
 ---
 
@@ -44,7 +56,7 @@ One install, four supported agents:
 | **git** | Hermes needs `.git` to find project skills; also gives you history |
 | **Python 3.9+** | The lint script is pure Python — no packages needed |
 | **Obsidian** | Your reading interface |
-| **An agent CLI** | At least one of the four above |
+| **An agent CLI** | At least one of the five above |
 
 ---
 
@@ -64,7 +76,7 @@ One install, four supported agents:
 ### macOS / Linux
 
 Pick the block that matches your agent — the bootstrapper cross-links everything,
-so all four agents will find the skill no matter which directory you clone into.
+so all five agents will find the skill no matter which directory you clone into.
 
 <details open>
 <summary>🟣 Claude Code</summary>
@@ -137,6 +149,27 @@ python .agents/skills/my-llm-wiki/scripts/init_vault.py
 
 # 4️⃣  Trust the skill (Hermes only, once per vault)
 hermes skills trust
+```
+
+</details>
+
+<details>
+<summary>🟠 Pi</summary>
+
+```bash
+# 1️⃣  Create the vault and make it a git repo
+mkdir -p ~/brain && cd ~/brain
+git init
+
+# 2️⃣  Install the skill (Pi reads .agents/skills/)
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .agents/skills/my-llm-wiki
+rm -rf .agents/skills/my-llm-wiki/.git   # you own this copy now; edit freely
+
+# 3️⃣  Bootstrap the vault
+python .agents/skills/my-llm-wiki/scripts/init_vault.py
+
+# 4️⃣  Start pi and trust the project when it asks (needed for .pi/prompts/)
+pi
 ```
 
 </details>
@@ -222,17 +255,41 @@ hermes skills trust
 
 </details>
 
+<details>
+<summary>🟠 Pi</summary>
+
+```powershell
+# 1️⃣  Create the vault and make it a git repo
+New-Item -ItemType Directory -Force ~\brain | Out-Null
+Set-Location ~\brain
+git init
+
+# 2️⃣  Install the skill (Pi reads .agents\skills\)
+git clone https://github.com/alhaol/llm-wiki-obsidian-with-ai .agents\skills\my-llm-wiki
+Remove-Item -Recurse -Force .agents\skills\my-llm-wiki\.git
+
+# 3️⃣  Bootstrap the vault
+python .agents\skills\my-llm-wiki\scripts\init_vault.py
+
+# 4️⃣  Start pi and trust the project when it asks (needed for .pi\prompts\)
+pi
+```
+
+</details>
+
 ### What the bootstrapper does
 
-Step 3 is not optional glue — it handles five things that are tedious to get
+Step 3 is not optional glue — it handles seven things that are tedious to get
 right by hand:
 
 | | What | Why |
 |---|---|---|
 | 🏷️ | Renames the skill in `SKILL.md` frontmatter | OpenCode rejects a skill whose `name:` and folder disagree |
-| 📁 | Creates `raw/` and `wiki/` | The two directories your vault needs |
-| 🧭 | Copies `guides/guide.md` to `Systems/vault-guide.md` and creates the folders it lists | One charter, visible in Obsidian, that you and the agent both follow |
+| 📁 | Creates `raw/`, `wiki/`, the `+/` inbox, and `assets/` | The directories the skill's workflows need |
+| 🧭 | Copies `guides/guide.md` to `Systems/vault-guide.md`, puts `guides/guide.html` at the vault root as `GUIDE.html`, and creates the folders the guide lists | One charter, visible in Obsidian, that you and the agent both follow — plus a styled copy that keeps the conventions in view |
+| 🏠 | Seeds `HOME.md` and `ME.md` at the vault root | Empty templates for you to fill in; the agent reads them before every task |
 | 🔗 | Cross-links the skill to `.agents/`, `.claude/`, `.gemini/` | So every agent can find it, no matter which directory you cloned into |
+| ⌨️ | Installs `/fetch`, `/ingest`, `/organize` into `.claude/commands/`, `.opencode/commands/`, `.gemini/commands/`, `.pi/prompts/`, and as small skills in `.hermes/skills/` | The same commands in all five agents. Re-running refreshes them (see [Keeping agents in sync](#-keeping-agents-in-sync)); a command file you wrote yourself is never touched (`--no-commands` skips this step) |
 | 🚫 | Writes a `.gitignore` | Keeps Obsidian's per-machine UI state out of git |
 
 ### After the bootstrapper
@@ -245,7 +302,10 @@ right by hand:
 3. Start your agent **from the vault root** — the skill resolves `raw/` and
    `wiki/` relative to your working directory
 4. Open `Systems/vault-guide.md` in Obsidian and pin it — it is your map of
-   the vault
+   the vault. `GUIDE.html` at the root is the same charter, styled; open it in
+   a browser (Obsidian lists it only with **Settings → Files & Links → Detect
+   all file extensions** on)
+5. Fill in `HOME.md` and `ME.md` — see [HOME and ME](#-home-and-me)
 
 ---
 
@@ -258,9 +318,9 @@ follow it**.
 
 | | Folders — *where does it live?* | Tags — *what is it about?* |
 |---|---|---|
-| **Defines** | `Daily`, `Fleeting`, `Areas/<project>`, `Concepts`, `raw`, `wiki`, `Systems`, `Archive` | Facets written `#facet/value`: life balance (`afpish/*`), `status/*`, `urgency/*`, `time/*`, plus optional `type/*`, `people/*`, `places/*` |
-| **You** | Capture in `Daily`/`Fleeting`, file weekly | Tag in the weekly review, update `status/*` as work moves |
-| **Agent** | Keeps `raw/` and `wiki/` in order, writes elsewhere only when asked | Tags every wiki article from the guide's values, flags missing tags during lint |
+| **Defines** | `+` (inbox), `Daily`, `Fleeting`, `Areas/<project>`, `Concepts`, `raw`, `wiki`, `Systems`, `Archive`, `assets` | Facets written `#facet/value`: life balance (`afpish/*`), `status/*`, `urgency/*`, `time/*`, plus optional `type/*`, `people/*`, `places/*` |
+| **You** | Capture in `Daily`/`Fleeting`, drop bulk or old material in `+`, file weekly | Tag in the weekly review, update `status/*` as work moves |
+| **Agent** | Keeps `raw/` and `wiki/` in order, empties `+` on `/organize`, writes elsewhere only when asked | Tags every wiki article from the guide's values, flags missing tags during lint |
 
 ### Customize it, then bootstrap
 
@@ -303,11 +363,89 @@ tags: [afpish/professional, status/progress, urgency/medium, time/ongoing, type/
 a tag value or folder the guide lacks, it asks you to add it to the guide
 instead of making one up.
 
+### ✅ The compliance gate
+
+Everything the agent ingests from `raw/` into `wiki/`, and everything it
+files out of `+/`, follows the system in full before the task counts as done:
+
+| | Rule | Checked by |
+|---|---|---|
+| 🏷️ | Only tags the guide lists, with the right count per facet. Stray tags (`#work`, `#Status/Progress`, `#todo`) are mapped to the guide value with the same meaning, or cleared | `scripts/check_guide.py` (`--strip` clears) |
+| 📂 | Only folders the guide lists; sources and articles one level under `raw/<topic>/` and `wiki/<topic>/` | `scripts/check_guide.py` |
+| 🔤 | Names follow the [naming convention](#-file-naming) | `scripts/check_names.py` |
+| 📄 | `raw/` carries no tags: frontmatter tags go, inline hashtags are escaped to `\#` (they look the same but no longer clutter your tag pane) | `scripts/check_guide.py` |
+
+`check_guide.py` reads the allowed tag values, facet counts, and folders from
+your `Systems/vault-guide.md`, so the gate always enforces *your* charter. The
+agent reports which tags it mapped or dropped; if a dropped value keeps
+appearing, add it to the guide and it will be kept from then on. Lint runs the
+same checks across the whole vault: it fixes `wiki/` itself and only proposes
+fixes for your own notes.
+
+### 🔤 File naming
+
+Every file outside `raw/` and `+/` is named from its content, then its type:
+
+```
+{word}_{word}[_{word}[_{word}[_{word}]]]_{identifier}.{extension}
+```
+
+Two to five lowercase words that say what the file is about, then an
+identifier that says what kind of file it is: the extension itself, except
+Excalidraw drawings, which use `excali`.
+
+| Kind | Example |
+|---|---|
+| Note or wiki article | `transformer_architecture_md.md` |
+| Daily note (date = three words) | `2026_09_26_standup_md.md` |
+| Image | `garden_bed_layout_png.png` |
+| PDF | `attention_paper_original_pdf.pdf` |
+| Drawing | `login_flow_sketch_excali.excalidraw.md` |
+
+The agent names everything it writes this way, `/organize` renames what it
+files from `+/` (updating links), and lint lists files that break the
+convention via `scripts/check_names.py`. It renames wiki articles when you
+agree, and your own notes only when you say yes. `raw/` keeps the dated slug
+names sources arrive with; `HOME.md`, `ME.md`, `GUIDE.html`,
+`Systems/vault-guide.md`, `wiki/index.md` and `wiki/log.md` are fixed names.
+
+---
+
+## 🏠 HOME and ME
+
+Two notes at the vault root that **you** write and maintain:
+
+| | `HOME.md` | `ME.md` |
+|---|---|---|
+| **What** | Your front page: focus, key notes, areas, topics you are watching | Who you are, your priorities, how you want the agent to write, file, and talk to you |
+| **Agent reads it** | Before every task, to know what deserves your attention | Before every task, to follow your preferences |
+| **Agent suggests** | "Suggested for HOME.md": ready-to-paste links to notes worth your attention after an ingest, organize, or lint | "Suggested for ME.md": a preference you stated in conversation, worded for the file |
+| **Agent edits it** | Never, unless you say yes to that exact change | Never, unless you say yes to that exact change |
+
+The bootstrapper creates both from
+[`references/home-template.md`](references/home-template.md) and
+[`references/me-template.md`](references/me-template.md), with empty sections
+and hints. Fill them in yourself; the more `ME.md` says, the less the agent
+has to ask.
+
 ---
 
 ## 📖 Daily Use
 
 Everything is plain conversation with the agent. Just talk to it from the vault root.
+Three slash commands cover the common cases:
+
+| Command | What it does |
+|---|---|
+| `/ingest <url, file, or text>` | Fetch the source into `raw/` and compile it into the wiki |
+| `/ingest` | Compile the backlog: every raw file not yet in the wiki |
+| `/fetch <url, file, or text>` | Only save the source into `raw/`; compile later with `/ingest` |
+| `/organize` | File everything in `+/`, tag it, compile the knowledge, empty `+/` |
+| `/organize --dry-run` | Show the filing plan without moving anything |
+
+They work the same in Claude Code, Gemini CLI, OpenCode, Hermes, and Pi. The
+commands are thin shortcuts into `SKILL.md`, so plain words ("organize the
+inbox", "ingest this") work too.
 
 ### 📥 Ingest — add knowledge
 
@@ -322,7 +460,7 @@ Tell the agent to add a source. It fetches, saves, triages, compiles, and indexe
 ```
 1. Fetch    →  saves to raw/ai-coding-tools/2026-03-19-statusline-landscape.md
 2. Triage   →  "New article — no existing coverage of this topic"
-3. Compile  →  writes wiki/ai-coding-tools/claude-code-statusline-landscape.md
+3. Compile  →  writes wiki/ai-coding-tools/claude_code_statusline_landscape_md.md
 4. Index    →  adds row to wiki/index.md
 5. Log      →  appends entry to wiki/log.md
 ```
@@ -351,9 +489,48 @@ From a real wiki's [`log.md`](examples/log-sample.md):
 - Disposition: No material
 ```
 
-Every action gets a timestamped entry: `ingest`, `query`, `lint`.
+Every action gets a timestamped entry: `ingest`, `fetch`, `organize`, `query`, `lint`.
 
 </details>
+
+### 🗂️ Organize — empty the inbox
+
+Got years of notes in another app, a folder of PDFs, or a pile of clipped
+pages? Drop them all into `+/` at the vault root (it sorts to the top of
+Obsidian's file explorer) and run:
+
+```
+> /organize
+```
+
+**What happens behind the scenes:**
+
+```
+1. Inventory  →  scripts/inbox.py lists every item, guesses note / clip / asset,
+                 and flags exact duplicates of files already in the vault
+2. Classify   →  each item gets one destination, decided by what it is:
+                   clipped article, paper, reading notes  →  raw/<topic>/
+                   dated journal entry                    →  Daily/
+                   half-formed idea                       →  Fleeting/
+                   project plan, decision, log            →  Areas/<area>/
+                   your own principle or framework        →  Concepts/
+                   finished project                       →  Archive/
+                   images, PDFs, other files              →  assets/
+3. Plan       →  shows you the table; asks once about anything unclear
+4. File       →  moves and renames assets, then notes (Untitled 3.md →
+                 pricing_experiment_ideas_md.md; tags added, links fixed),
+                 then raw items (wrapped in the raw template, names kept)
+5. Compile    →  ingests each new raw file into the wiki, one at a time
+6. Close out  →  logs every move, suggests HOME.md entries, checks +/ is empty
+```
+
+Nothing is rewritten: your notes keep their text, and only gain a
+convention-following name and the vault guide's tags in frontmatter. Nothing is lost: items only move, except exact
+byte-for-byte duplicates, which are dropped and logged. Nothing goes straight
+into `wiki/`; knowledge gets there only by being compiled from `raw/`.
+
+Run `/organize --dry-run` first if you want to see the plan before anything
+moves.
 
 ### 🔍 Query — ask what you know
 
@@ -387,8 +564,8 @@ The agent runs three levels of checks:
 
 | Level | What it does | Auto-fix? |
 |---|---|---|
-| 🟢 **Safe fixes** | Broken links, index drift, dead cross-refs | ✅ Yes |
-| 🟡 **Mechanical** | Facts that don't match their source files | ❌ Reports only |
+| 🟢 **Safe fixes** | Broken links, index drift, dead cross-refs, stray tags in `wiki/` | ✅ Yes |
+| 🟡 **Mechanical** | Facts that don't match their source files; tags, folders, and names outside the guide | ❌ Reports only (offers fixes for your notes) |
 | 🔴 **Judgment** | Contradictions, stale claims, missing cross-refs | ❌ Reports only |
 
 You can run the mechanical evidence check yourself, outside the agent:
@@ -430,25 +607,33 @@ After setup, from the vault root:
 │   ├── 📄 SKILL.md                  ← customize here
 │   ├── 📂 references/               ← templates the agent follows
 │   ├── 📂 guides/                   ← vault guide template (edit before bootstrap)
-│   ├── 📂 scripts/                  ← check_evidence.py, init_vault.py
+│   ├── 📂 scripts/                  ← check_evidence.py, check_guide.py, check_names.py,
+│   │                                   inbox.py, init_vault.py
+│   ├── 📂 commands/                 ← /fetch, /ingest, /organize templates
 │   └── 📂 examples/                 ← real wiki samples (see below)
-├── 🔗 .agents/skills/my-llm-wiki    ← link for Hermes
+├── 🔗 .agents/skills/my-llm-wiki    ← link for Hermes, Pi, OpenCode, Gemini CLI
 ├── 🔗 .gemini/skills/my-llm-wiki    ← link for Gemini CLI
+├── 📂 .claude/commands/ .gemini/commands/ .opencode/commands/
+│                                    ← /fetch, /ingest, /organize per agent
+├── 📂 +/                            ← inbox: drop anything, /organize empties it
 ├── 📂 raw/                          ← sources, immutable
 │   └── <topic>/YYYY-MM-DD-slug.md
 ├── 📂 wiki/                         ← articles, agent-owned
 │   ├── 📄 index.md
 │   ├── 📄 log.md
-│   └── <topic>/<article>.md
+│   └── <topic>/<words>_md.md
 ├── 📂 Systems/
-│   └── 📄 vault-guide.md            ← folder & tag charter, yours to edit
+│   └── 📄 vault-guide.md            ← folder, naming & tag charter, yours to edit
+├── 📄 HOME.md                       ← your front page, you maintain it
+├── 📄 ME.md                         ← you, for the agent, you maintain it
+├── 🌐 GUIDE.html                    ← the charter, styled, for your browser
 ├── 📂 Daily/ Fleeting/ Areas/ ...   ← your notes, per the guide
-├── 📂 assets/                       ← Obsidian attachments
+├── 📂 assets/                       ← attachments, yours and /organize's
 └── 📄 .gitignore
 ```
 
 > 💡 Everything in dot-directories (`.claude/`, `.gemini/`, `.agents/`) is
-> invisible to the vault. What you see in Obsidian is `raw/`, `wiki/`,
+> invisible to the vault. What you see in Obsidian is `+/`, `raw/`, `wiki/`,
 > `assets/`, and the folders from your vault guide.
 
 ---
@@ -480,7 +665,7 @@ transformation looks like:
 Unstructured research notes with a metadata header. The agent reads this and
 **never touches it again**.
 
-### After: compiled article ([`claude-code-statusline-landscape.md`](examples/claude-code-statusline-landscape.md))
+### After: compiled article ([`claude_code_statusline_landscape_md.md`](examples/claude_code_statusline_landscape_md.md))
 
 ```markdown
 # Claude Code Statusline Tool Ecosystem
@@ -530,12 +715,13 @@ The agent keeps this in sync automatically.
 
 The bootstrapper creates cross-links so one clone serves all agents:
 
-| | Agent | Reads from | Extra step |
-|---|---|---|---|
-| 🟣 | Claude Code | `.claude/skills/` | none |
-| 🔵 | Gemini CLI | `.gemini/skills/` or `.agents/skills/` | none |
-| 🟢 | OpenCode | `.claude/skills/` | none |
-| 🟡 | Hermes | `.agents/skills/` | `hermes skills trust` (once per vault) |
+| | Agent | Reads from | Commands from | Extra step |
+|---|---|---|---|---|
+| 🟣 | Claude Code | `.claude/skills/` | `.claude/commands/*.md` | none |
+| 🔵 | Gemini CLI | `.gemini/skills/` or `.agents/skills/` | `.gemini/commands/*.toml` | none |
+| 🟢 | OpenCode | `.claude/skills/` | `.opencode/commands/*.md` | none |
+| 🟡 | Hermes | `.agents/skills/` | `.hermes/skills/<command>/SKILL.md` (each command is a small skill) | `hermes skills trust` (once per vault) |
+| 🟠 | Pi | `.agents/skills/` | `.pi/prompts/*.md` | trust the project when Pi asks (project prompts load only after trust) |
 
 <details>
 <summary>🟡 Hermes-specific setup</summary>
@@ -550,11 +736,30 @@ hermes skills trust
 Until you do, Hermes shows a banner saying project skills were found but not
 loaded. `hermes skills untrust` reverses it.
 
-**If the bootstrapper reported `copied` rather than `symlink`/`junction`** for
-the Hermes path, the two copies drift. Re-run `init_vault.py` after editing
-`SKILL.md` to re-sync.
-
 </details>
+
+### 🔄 Keeping agents in sync
+
+One skill, five agents. What each agent sees stays identical because:
+
+- **Skills are links.** `.agents/`, `.claude/` and `.gemini/skills/` point at
+  the one install (symlink, or a junction on Windows), so an edit to
+  `SKILL.md` reaches every agent at once. Only when the OS allows neither does
+  the bootstrapper copy the skill, and it stamps that copy.
+- **Commands are generated.** Each command file carries a
+  `generated by init_vault.py` stamp line.
+
+After you edit the skill, its `commands/`, or pull an update, **re-run the
+bootstrapper**:
+
+```bash
+python .claude/skills/my-llm-wiki/scripts/init_vault.py
+```
+
+It refreshes every stamped file and copy, and reports each one as
+`created`, `updated`, or `up to date`. A command file without the stamp is
+yours: it is reported as `left alone` and never overwritten. To keep your own
+edits to a generated command, delete its stamp line.
 
 ---
 
@@ -653,29 +858,22 @@ The clone must land in `<vault>/.claude/skills/<name>/` (or `.gemini/`,
 
 ## 🙏 Credits
 
-The skill itself — `SKILL.md`, `references/raw-template.md`,
-`references/article-template.md`, `references/index-template.md`,
-`references/archive-template.md`, `scripts/check_evidence.py`, `tests/` and
-`examples/` — is from
+Originally built on
 [Astro-Han/karpathy-llm-wiki](https://github.com/Astro-Han/karpathy-llm-wiki)
-by Yuhan Lei, MIT licensed. Changes to those files: explicit `encoding="utf-8"`
-in `tests/` file I/O (which otherwise fails on Windows), and a Vault Guide
-section in `SKILL.md`.
-
-This repo adds the Obsidian integration: `scripts/init_vault.py`,
-`references/obsidian-conventions.md`, `guides/`, `tests/test_init_vault.py`,
-and this README.
+(MIT), and since extended into the vault system described above.
 
 The underlying idea is Andrej Karpathy's: the LLM writes and maintains the wiki,
-the human reads and asks questions, and the wiki is a persistent, compounding
-artifact.
+the human reads and asks questions.
 
 ---
 
 📄 MIT, © 2026 Ibrahim AbuAlhaol — see [LICENSE](LICENSE).
 
 <details>
-<summary>Vendored skill license (Yuhan Lei)</summary>
+<summary>Upstream license (karpathy-llm-wiki)</summary>
+
+Kept as the MIT license requires for the portions derived from the upstream
+project.
 
 ```
 Copyright (c) 2026 Yuhan Lei
