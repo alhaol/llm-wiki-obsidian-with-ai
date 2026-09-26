@@ -39,7 +39,8 @@ class RenderTest(unittest.TestCase):
     def test_shipped_html_is_built_from_the_shipped_guide(self):
         source = (ROOT / "guides" / "guide.md").read_text(encoding="utf-8")
         expected = build_guide.render(source, build_guide.REPO_STAMP)
-        actual = (ROOT / "guides" / "guide.html").read_text(encoding="utf-8")
+        # A Windows checkout may convert the file to CRLF; compare content only.
+        actual = (ROOT / "guides" / "guide.html").read_text(encoding="utf-8").replace("\r\n", "\n")
         self.assertEqual(
             actual, expected, "guides/guide.html is stale: run python scripts/build_guide.py"
         )

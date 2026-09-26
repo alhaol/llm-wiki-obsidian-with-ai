@@ -59,6 +59,15 @@ class GuideFoldersTest(unittest.TestCase):
 
 
 class InstallGuideTest(unittest.TestCase):
+    def test_starter_guide_installs_its_folders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            vault = Path(tmp)
+            init_vault.install_guide(vault, ROOT, ROOT / init_vault.STARTER_GUIDE)
+            text = (vault / init_vault.GUIDE_TARGET).read_text(encoding="utf-8")
+            self.assertIn("Vault Guide — Starter", text)
+            for folder in ["+", "Areas/Work", "Areas/Personal", "Concepts", "assets"]:
+                self.assertTrue((vault / folder).is_dir(), folder)
+
     def test_copies_once_and_never_overwrites(self):
         with tempfile.TemporaryDirectory() as tmp:
             tmp = Path(tmp)

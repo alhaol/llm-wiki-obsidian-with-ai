@@ -88,7 +88,8 @@ class MainTest(unittest.TestCase):
 class ShippedDocsTest(unittest.TestCase):
     def test_every_example_name_in_the_guides_is_valid(self):
         name_re = re.compile(r"[a-z0-9_]+_[a-z0-9]+(?:\.excalidraw)?\.[a-z]+")
-        for doc in ["guides/guide.md", "guides/guide.html", "SKILL.md"]:
+        for doc in ["guides/guide.md", "guides/guide.html", "guides/starter-guide.md", "SKILL.md",
+                    "examples/organize-walkthrough.md"]:
             text = (ROOT / doc).read_text(encoding="utf-8")
             names = set(re.findall(r"(?:`|<code>|/)(" + name_re.pattern + r")(?=`|</code>)", text))
             self.assertTrue(names, doc)

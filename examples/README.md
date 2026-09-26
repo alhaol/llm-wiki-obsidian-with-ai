@@ -10,6 +10,8 @@ This directory contains real files from a knowledge base maintained with `karpat
 | `2026-03-19-claude-code-statusline-landscape.md` | Raw source material before compilation |
 | `ai-coding-tools-index.md` | One topic section of the global index (summary + Updated per article) |
 | `log-sample.md` | Sample entries from operation log (all current entry types) |
+| `organize-walkthrough.md` | One `/organize` run end to end: the messy `+/` drop, inventory, plan, renames, compile, compliance gate, log, and the vault after (illustrative notes, real formats) |
+| `home-sample.md`, `me-sample.md` | Filled-in `HOME.md` and `ME.md`, to show what the agent reads before every task |
 
 ## Raw vs Compiled Comparison
 

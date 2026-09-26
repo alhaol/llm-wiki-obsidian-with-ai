@@ -1,6 +1,7 @@
 import contextlib
 import importlib.util
 import io
+import re
 import sys
 import tempfile
 import unittest
@@ -30,6 +31,29 @@ class CharterTest(unittest.TestCase):
         self.assertEqual(charter.counts["places"], (0, None))
         for folder in ["+", "Daily", "Areas/Day-Job", "Concepts", "assets", "Systems"]:
             self.assertIn(folder, charter.folders)
+
+
+    def test_starter_guide_is_complete_and_parseable(self):
+        text = (ROOT / "guides" / "starter-guide.md").read_text(encoding="utf-8")
+        charter = check_guide.read_charter(text)
+        self.assertEqual(charter.counts["status"], (1, 1))
+        self.assertEqual(charter.counts["urgency"], (1, 1))
+        self.assertEqual(charter.counts["time"], (1, 1))
+        self.assertEqual(charter.counts["type"], (0, None))
+        self.assertIn("type/reference", charter.values)
+        # Every folder the skill's own workflows write to must be listed.
+        for folder in ["+", "Daily", "Fleeting", "Areas", "Concepts", "raw", "wiki",
+                       "Systems", "Archive", "assets"]:
+            self.assertIn(folder, charter.folders)
+
+
+    def test_walkthrough_uses_only_guide_tags(self):
+        charter = check_guide.read_charter(SHIPPED)
+        text = (ROOT / "examples" / "organize-walkthrough.md").read_text(encoding="utf-8")
+        # Tags the walkthrough shows as kept; the "Tag found" column is the stray input.
+        kept = set(re.findall(r"(?<![\w#])((?:afpish|status|urgency|time|type|people|places)/[a-z0-9-]+)", text))
+        self.assertTrue(kept)
+        self.assertEqual(kept - charter.values, set())
 
 
 class VaultTest(unittest.TestCase):

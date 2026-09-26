@@ -16,8 +16,9 @@ arguments. What it does:
   * verifies the vault is a git repo (Hermes needs .git to find project skills)
   * renames the skill in SKILL.md frontmatter to match its directory
   * creates raw/ and wiki/, the +/ inbox, and assets/
-  * copies guides/guide.md into the vault as Systems/vault-guide.md and creates
-    the folders it lists (edit the guide *before* running this), and puts the
+  * copies guides/guide.md (or, with --starter, guides/starter-guide.md) into
+    the vault as Systems/vault-guide.md and creates the folders it lists (edit
+    the guide *before* running this), and puts the
     guide, rendered as styled HTML, at the vault root as GUIDE.html (rebuilt
     from the vault's own guide on every run, so it follows your edits)
   * seeds HOME.md and ME.md at the vault root for the human to fill in
@@ -65,6 +66,8 @@ EXPOSE_DIRS = (".agents/skills", ".claude/skills", ".gemini/skills")
 # Where the vault guide ships inside the skill, and where it lands in the vault.
 # The vault copy is visible in Obsidian on purpose: the human reads it too.
 GUIDE_SOURCE = Path("guides/guide.md")
+# A minimal alternative for people who want to grow their own charter.
+STARTER_GUIDE = Path("guides/starter-guide.md")
 GUIDE_TARGET = Path("Systems/vault-guide.md")
 
 # Files the human keeps at the vault root, seeded once and never overwritten:
@@ -467,6 +470,11 @@ def main() -> int:
         help=f"Vault guide to install. Defaults to {GUIDE_SOURCE} in the skill.",
     )
     parser.add_argument(
+        "--starter",
+        action="store_true",
+        help=f"Install the minimal {STARTER_GUIDE} instead of the full guide.",
+    )
+    parser.add_argument(
         "--no-guide",
         dest="install_guide",
         action="store_false",
@@ -518,7 +526,8 @@ def main() -> int:
                 )
 
         if args.install_guide:
-            steps.extend(install_guide(vault, skill_root, args.guide))
+            source = args.guide or (skill_root / STARTER_GUIDE if args.starter else None)
+            steps.extend(install_guide(vault, skill_root, source))
             steps.append(install_guide_html(vault))
 
         steps.extend(install_root_files(vault, skill_root, HUMAN_FILES))
