@@ -774,7 +774,7 @@ Kept as the MIT license requires for the portions derived from the upstream
 project.
 
 ```
-Copyright (c) 2026 Yuhan Lei
+Copyright (c) 2026 Ibrahim AbuAlhaol
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
