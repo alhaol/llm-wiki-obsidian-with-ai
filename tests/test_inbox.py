@@ -1,6 +1,7 @@
 import contextlib
 import importlib.util
 import io
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -66,6 +67,21 @@ class InboxTest(unittest.TestCase):
         _, out = run("list", str(self.vault))
         self.assertIn("duplicate of +/a.md", out)
         self.assertIn("1 duplicate(s)", out)
+
+    def test_list_warns_about_uncommitted_changes(self):
+        _, out = run("list", str(self.vault))
+        self.assertIn("not a git repo", out)
+
+        git = ["git", "-c", "user.name=t", "-c", "user.email=t@t", "-C", str(self.vault)]
+        subprocess.run(git + ["init", "-q"], check=True)
+        self.write("+/idea.md", "thought\n")
+        _, out = run("list", str(self.vault))
+        self.assertIn("uncommitted change(s)", out)
+
+        subprocess.run(git + ["add", "-A"], check=True)
+        subprocess.run(git + ["commit", "-q", "-m", "snapshot"], check=True)
+        _, out = run("list", str(self.vault))
+        self.assertNotIn("warning", out)
 
     def test_list_empty_inbox(self):
         _, out = run("list", str(self.vault))

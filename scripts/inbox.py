@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -75,7 +76,28 @@ def vault_digests(vault: Path, sizes: set[int]) -> dict[str, Path]:
     return found
 
 
+def uncommitted(vault: Path) -> int | None:
+    """Uncommitted changes in the vault's git repo, or None outside one."""
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain"], cwd=str(vault), capture_output=True, text=True
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return len([line for line in result.stdout.splitlines() if line.strip()])
+
+
 def cmd_list(vault: Path) -> int:
+    dirty = uncommitted(vault)
+    if dirty:
+        print(
+            f"warning: {dirty} uncommitted change(s). Commit before organizing, so the "
+            "run can be undone with one `git revert`.\n"
+        )
+    elif dirty is None:
+        print("warning: not a git repo, so an organize run cannot be undone with git.\n")
     files = inbox_files(vault)
     if not files:
         print(f"{INBOX}/ is empty" if (vault / INBOX).is_dir() else f"no {INBOX}/ folder in {vault}")

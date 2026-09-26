@@ -118,7 +118,7 @@ class RenderCommandTest(unittest.TestCase):
     @unittest.skipIf(tomllib is None, "needs tomllib (Python 3.11+)")
     def test_shipped_commands_render_for_every_agent(self):
         sources = sorted((ROOT / init_vault.COMMANDS_SOURCE).glob("*.md"))
-        self.assertEqual([s.stem for s in sources], ["fetch", "ingest", "organize"])
+        self.assertEqual([s.stem for s in sources], ["fetch", "ingest", "organize", "vault-status"])
         for source in sources:
             text = source.read_text(encoding="utf-8")
             self.assertIn("{{skill}}", text)
@@ -212,16 +212,35 @@ class RootFilesTest(unittest.TestCase):
     def test_seeds_once_and_never_overwrites(self):
         with tempfile.TemporaryDirectory() as tmp:
             vault = Path(tmp)
-            files = init_vault.HUMAN_FILES + (init_vault.GUIDE_HTML,)
+            files = init_vault.HUMAN_FILES
             (vault / "ME.md").write_text("mine", encoding="utf-8")
 
             steps = dict(init_vault.install_root_files(vault, ROOT, files))
             self.assertEqual(steps["HOME.md"], "created")
-            self.assertEqual(steps["GUIDE.html"], "created")
             self.assertIn("left alone", steps["ME.md"])
             self.assertEqual((vault / "ME.md").read_text(encoding="utf-8"), "mine")
             self.assertIn("# HOME", (vault / "HOME.md").read_text(encoding="utf-8"))
-            self.assertIn("File Naming", (vault / "GUIDE.html").read_text(encoding="utf-8"))
+
+    def test_guide_html_follows_the_vault_guide(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            vault = Path(tmp)
+            self.assertIn("skipped", init_vault.install_guide_html(vault)[1])
+
+            guide = vault / init_vault.GUIDE_TARGET
+            guide.parent.mkdir(parents=True)
+            guide.write_text("# My Vault\n\n## File Naming\n\nRule one.\n", encoding="utf-8")
+            self.assertEqual(init_vault.install_guide_html(vault), ("GUIDE.html", "created"))
+            page = (vault / "GUIDE.html").read_text(encoding="utf-8")
+            self.assertIn('<h2 id="file-naming">File Naming</h2>', page)
+            self.assertIn(init_vault.STAMP, page)
+
+            self.assertEqual(init_vault.install_guide_html(vault)[1], "up to date")
+            guide.write_text("# My Vault\n\n## File Naming\n\nRule two.\n", encoding="utf-8")
+            self.assertEqual(init_vault.install_guide_html(vault)[1], "updated")
+            self.assertIn("Rule two.", (vault / "GUIDE.html").read_text(encoding="utf-8"))
+
+            (vault / "GUIDE.html").write_text("<p>my own page</p>", encoding="utf-8")
+            self.assertIn("left alone", init_vault.install_guide_html(vault)[1])
 
     def test_missing_source_is_skipped(self):
         with tempfile.TemporaryDirectory() as tmp:

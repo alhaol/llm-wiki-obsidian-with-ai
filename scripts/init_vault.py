@@ -18,12 +18,13 @@ arguments. What it does:
   * creates raw/ and wiki/, the +/ inbox, and assets/
   * copies guides/guide.md into the vault as Systems/vault-guide.md and creates
     the folders it lists (edit the guide *before* running this), and puts the
-    styled guides/guide.html at the vault root as GUIDE.html
+    guide, rendered as styled HTML, at the vault root as GUIDE.html (rebuilt
+    from the vault's own guide on every run, so it follows your edits)
   * seeds HOME.md and ME.md at the vault root for the human to fill in
   * exposes the skill in .agents/, .claude/ and .gemini/skills/ (symlink,
     junction, or copy), which between them reach Claude Code, Gemini CLI,
     OpenCode, Hermes and Pi
-  * installs the /fetch, /ingest and /organize commands for all five: command
+  * installs the /fetch, /ingest, /organize and /vault-status commands for all five: command
     files for Claude Code, OpenCode, Gemini CLI and Pi, small skills for Hermes
 
 Re-run it after updating the skill to re-sync: links are always current, and
@@ -69,7 +70,7 @@ GUIDE_TARGET = Path("Systems/vault-guide.md")
 # Files the human keeps at the vault root, seeded once and never overwritten:
 # a styled copy of the guide to keep the conventions in view, and the two notes
 # the human maintains for the agent (see SKILL.md, "HOME.md and ME.md").
-GUIDE_HTML = ("GUIDE.html", Path("guides/guide.html"))
+GUIDE_HTML = Path("GUIDE.html")
 HUMAN_FILES = (
     ("HOME.md", Path("references/home-template.md")),
     ("ME.md", Path("references/me-template.md")),
@@ -266,6 +267,31 @@ def install_guide(vault: Path, skill_root: Path, source: Path | None) -> list[tu
     return steps
 
 
+def load_script(name: str):
+    """Import a sibling script as a module (they are standalone, not a package)."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def install_guide_html(vault: Path) -> tuple[str, str]:
+    """Render the vault's guide as GUIDE.html, refreshed while it carries the stamp."""
+    guide = vault / GUIDE_TARGET
+    if not guide.is_file():
+        return (GUIDE_HTML.name, f"skipped (no {GUIDE_TARGET.as_posix()})")
+    stamp = (
+        f"{STAMP} from {GUIDE_TARGET.as_posix()}; edit the guide, then re-run it "
+        "to rebuild this page"
+    )
+    html = load_script("build_guide").render(guide.read_text(encoding="utf-8"), stamp)
+    state = sync_file(vault / GUIDE_HTML, html)
+    labels = {"kept": "left alone (yours: no stamp)", "current": "up to date"}
+    return (GUIDE_HTML.name, labels.get(state, state))
+
+
 def install_root_files(
     vault: Path, skill_root: Path, files: tuple[tuple[str, Path], ...]
 ) -> list[tuple[str, str]]:
@@ -444,13 +470,13 @@ def main() -> int:
         "--no-guide",
         dest="install_guide",
         action="store_false",
-        help=f"Do not install {GUIDE_TARGET}, {GUIDE_HTML[0]}, or the guide's folders.",
+        help=f"Do not install {GUIDE_TARGET}, {GUIDE_HTML}, or the guide's folders.",
     )
     parser.add_argument(
         "--no-commands",
         dest="install_commands",
         action="store_false",
-        help="Do not install the /fetch, /ingest and /organize slash commands.",
+        help="Do not install the /fetch, /ingest, /organize and /vault-status slash commands.",
     )
     args = parser.parse_args()
 
@@ -493,7 +519,7 @@ def main() -> int:
 
         if args.install_guide:
             steps.extend(install_guide(vault, skill_root, args.guide))
-            steps.extend(install_root_files(vault, skill_root, (GUIDE_HTML,)))
+            steps.append(install_guide_html(vault))
 
         steps.extend(install_root_files(vault, skill_root, HUMAN_FILES))
 
@@ -537,7 +563,8 @@ Next steps
        /ingest https://example.com/post
        /organize
 
-     The same three commands work in all five agents.
+     /vault-status gives a one-screen health check. All four commands work in
+     all five agents.
 
   4. Read {GUIDE_TARGET.as_posix()} in Obsidian. It is the folder, tag, and
      naming charter both you and the agent follow -- edit it there as your

@@ -87,7 +87,7 @@ Three files sit at the vault root, next to the folders:
 |------|---------------|---------|
 | `HOME.md` | You | Your front page: current focus, key notes, areas, topics you are watching. The agent suggests entries; you decide |
 | `ME.md` | You | Who you are, your priorities, how you want the agent to write, file, and talk to you |
-| `GUIDE.html` | Nobody (reference) | This charter, styled, to open in a browser and keep the conventions in view |
+| `GUIDE.html` | Nobody (generated) | This charter, styled, to open in a browser and keep the conventions in view. Rebuilt from this file each time `init_vault.py` runs |
 
 The agent reads `HOME.md` and `ME.md` before every task and **never edits them
 without your explicit yes**. It proposes lines under "Suggested for HOME.md" or
