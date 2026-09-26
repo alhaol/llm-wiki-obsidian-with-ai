@@ -36,6 +36,17 @@ class RenderTest(unittest.TestCase):
         self.assertIn("<!-- made by test -->", page)
         self.assertIn('<nav><p>Contents</p><a href="#section-one">', page)
 
+    def test_callouts_render_as_cards(self):
+        page = build_guide.render(
+            "# T\n\n> [!important] Remember **this**\n> Body text.\n\n"
+            "> [!tip]- Folded\n> Hidden.\n\n> [!summary]+\n> Open.\n\n> Plain quote.\n"
+        )
+        self.assertIn('<div class="callout" data-callout="important">'
+                      '<p class="callout-title">Remember <strong>this</strong></p><p>Body text.</p></div>', page)
+        self.assertIn('<details class="callout" data-callout="tip"><summary class="callout-title">Folded</summary>', page)
+        self.assertIn('<details class="callout" data-callout="summary" open><summary class="callout-title">Summary</summary>', page)
+        self.assertIn("<blockquote><p>Plain quote.</p></blockquote>", page)
+
     def test_shipped_html_is_built_from_the_shipped_guide(self):
         source = (ROOT / "guides" / "guide.md").read_text(encoding="utf-8")
         expected = build_guide.render(source, build_guide.REPO_STAMP)

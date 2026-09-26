@@ -102,6 +102,16 @@ cleared them after the agent mapped the ones with a clear meaning:
 | `#journal` | `type/daily` |
 | `#ideas`, `#todo`, `#pricing` | removed |
 
+Callouts got the same treatment. `second-order thinking.md` used Obsidian's
+`> [!tldr]` alias, which became the guide's `> [!summary]`. The two notes filed
+into `/Concepts` and `/Areas` each gained one summary callout above their
+untouched text, for example:
+
+```markdown
+> [!summary] Ask "and then what?" before deciding
+> Judge a choice by its second- and third-order effects, not only the first.
+```
+
 ```
 $ python .claude/skills/my-llm-wiki/scripts/check_guide.py . <filed paths...>
 9 file(s) checked, 0 guide violation(s)

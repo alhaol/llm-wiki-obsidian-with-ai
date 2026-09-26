@@ -1,7 +1,7 @@
 ---
 name: karpathy-llm-wiki
 author: Ibrahim AbuAlhaol
-description: "Use when building or maintaining a personal LLM-powered knowledge base. Triggers: ingesting sources into a wiki, fetching sources into raw/, organizing or emptying the + inbox, filing notes into the vault, querying wiki knowledge, linting wiki quality, '/ingest', '/fetch', '/organize', naming or renaming vault notes, HOME.md or ME.md, 'add to wiki', 'what do I know about', or any mention of 'LLM wiki' or 'Karpathy wiki'."
+description: "Use when building or maintaining a personal LLM-powered knowledge base. Triggers: ingesting sources into a wiki, fetching sources into raw/, organizing or emptying the + inbox, filing notes into the vault, querying wiki knowledge, linting wiki quality, '/ingest', '/fetch', '/organize', naming or renaming vault notes, callouts, HOME.md or ME.md, 'add to wiki', 'what do I know about', or any mention of 'LLM wiki' or 'Karpathy wiki'."
 ---
 
 # Karpathy LLM Wiki
@@ -84,6 +84,20 @@ python3 <skill-dir>/scripts/rename.py <project-root> <old-path> <new-path> [--dr
 
 It moves the file and rewrites every link to it across the vault — relative markdown links and images, `[[wikilinks]]`, `![[embeds]]`, aliases and `#heading` anchors kept — plus the moved note's own relative links. It refuses to overwrite, and reports bare-name wikilinks it cannot safely change (another file has the same name); fix those by hand. A hand rename that misses one link breaks the vault silently.
 
+### Callouts
+
+Obsidian callouts (`> [!type] Title`) are how a note draws the eye to what matters, and they make notes easier to recall. Use the types the vault guide's **Callouts** table lists, and only those; without a guide, use `summary`, `important`, `tip`, `warning`, and `question`.
+
+- **Every wiki article and archive page** opens its Overview with a `> [!summary]` callout: the takeaway in one to three sentences.
+- **Elsewhere in an article**, add a callout only where a point needs extra attention: a key fact (`important`), a pitfall or a contradiction you want seen (`warning`), an open question (`question`). About three per note, at most; a note where everything is highlighted highlights nothing.
+- **Write the title as the point itself** (`> [!important] Attention cost grows with the square of the context`), so the title alone works as a recall cue. Fold long ones with `-`.
+- **Grounding still applies.** Numbers, dates, and quotes inside a callout must be located in the linked raw files like any other article text.
+- **Placement.** Never put a callout between an article's H1 and its metadata blockquote, and keep a blank line after the metadata; `check_evidence.py` reads the first blockquote under the title as the metadata. Keep **Status: Outdated / Disputed** blocks as the plain blockquotes the article template shows.
+- **raw/ never gets callouts**; its text is the source's.
+- **The human's notes**: Organize may add one `> [!summary]` directly under the title of a `/Concepts` or `/Areas` note it files, as a new block above the untouched original text. Suggest any other callouts in the report instead of inserting them.
+
+`scripts/check_guide.py` reports callout types the guide does not list, and `--strip` renames Obsidian's built-in aliases (`tldr` → `summary`, `hint` → `tip`, `caution` → `warning`, ...) to the listed type they stand for.
+
 ### Compliance Gate
 
 Everything Ingest compiles into wiki/ and everything Organize files out of `+/` follows the system in full: the guide's folders, its tags, and the Naming Convention. It is not "later cleanup"; a workflow is not finished until its files pass the gate.
@@ -94,8 +108,8 @@ For the files a workflow wrote or moved (vault-relative paths):
    ```
    python3 <skill-dir>/scripts/check_guide.py <project-root> <paths...> --strip
    ```
-   It reads the allowed values, facet counts, and folders from the guide itself. `--strip` removes unlisted frontmatter tags, un-tags unlisted inline hashtags (the word stays, the `#` goes; a line of nothing but tags is removed), and in raw/ drops frontmatter tags and escapes inline hashtags to `\#`, which Obsidian renders the same but no longer indexes. It never adds tags.
-2. **Check.** Run both checkers on the same paths and fix whatever they report — missing facets, a wrong folder, a bad name — then run them again:
+   It reads the allowed values, facet counts, folders, and callout types from the guide itself. `--strip` removes unlisted frontmatter tags, un-tags unlisted inline hashtags (the word stays, the `#` goes; a line of nothing but tags is removed), and in raw/ drops frontmatter tags and escapes inline hashtags to `\#`, which Obsidian renders the same but no longer indexes. It never adds tags.
+2. **Check.** Run both checkers on the same paths and fix whatever they report — missing facets, a wrong folder, a bad name, an unlisted callout type — then run them again:
    ```
    python3 <skill-dir>/scripts/check_guide.py <project-root> <paths...>
    python3 <skill-dir>/scripts/check_names.py <project-root> <paths...>
@@ -175,7 +189,7 @@ New, Update, and Disputed may be combined. No material is exclusive.
 Determine where the new content belongs:
 
 - **Same core thesis as existing article** → Merge into that article. Add the new source to Sources/Raw. Update affected sections.
-- **New concept** → Create a new article in the most relevant topic directory. Name the file after the concept, not the raw file, following the Naming Convention (`transformer_architecture_md.md`).
+- **New concept** → Create a new article in the most relevant topic directory. Name the file after the concept, not the raw file, following the Naming Convention (`transformer_architecture_md.md`). Open its Overview with a `[!summary]` callout, and use other callouts where a point needs extra attention (see Callouts).
 - **Spans multiple topics** → Place in the most relevant directory. Add See Also cross-references to related articles elsewhere.
 
 These are not mutually exclusive. A single source may warrant merging into one article while also creating a separate article for a distinct concept it introduces. In all cases, check for factual conflicts: if the new source contradicts existing content, mark the contested claims with a **Status: Disputed** block (see `references/article-template.md`). When the conflicting content lives in separate articles, mark both and cross-link them.
@@ -287,6 +301,7 @@ Then file in this order, so links can be rewritten against final paths:
    - File name: renamed to the Naming Convention from the content (`Untitled 3.md` → `pricing_experiment_ideas_md.md`). Keep the human's words when they already describe the note. Daily notes start with their date: `2026_09_20_client_call_md.md`.
    - Body: keep it verbatim. Only fix links (below).
    - Frontmatter: add the guide's mandatory facets as `tags:` (values only from the guide), merged into any frontmatter already there. Existing tags the guide lists stay; the rest are mapped to guide values or cleared by the Compliance Gate, frontmatter and inline alike.
+   - Callouts: `/Concepts` and `/Areas` notes may get one `> [!summary]` under the title (see Callouts); nothing else in the body changes. Callouts already in the note keep their text; an alias type is renamed to the listed type by the Compliance Gate.
 3. **Raw items** → `raw/<topic>/`, following Fetch's naming and topic rules:
    - Raw files keep Fetch's date-slug names, not the Naming Convention.
    - A clip that already has the raw header: move it as is.
@@ -418,6 +433,7 @@ These rely on your judgment. Report findings without auto-fixing:
 - Concepts frequently mentioned but lacking a dedicated page
 - Archive pages whose cited source articles have been substantially updated since archival
 - Links in HOME.md that point to missing files (propose the fix; HOME.md is the human's)
+- Wiki articles without a `[!summary]` callout, and notes crowded with callouts (more than about three besides the summary)
 
 ### Post-Lint
 
@@ -434,6 +450,7 @@ Append to `wiki/log.md`:
 - Standard markdown with relative links throughout.
 - File names follow the Naming Convention everywhere except raw/, +/, and the fixed files.
 - Tags come only from the guide; raw/ carries none. Every Ingest and Organize passes the Compliance Gate.
+- Callouts use only the guide's types; every wiki article opens with a `[!summary]`.
 - HOME.md and ME.md change only with the human's explicit yes.
 - wiki/ supports one level of topic subdirectories only. No deeper nesting.
 - Today's date for log entries, Collected dates, and Archived dates. Updated dates reflect when the article's knowledge content last changed. Published dates come from the source (use `Unknown` when unavailable).

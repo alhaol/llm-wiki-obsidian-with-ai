@@ -6,6 +6,9 @@
 
 ## Overview
 
+> [!summary]
+> {The answer in one to three sentences.}
+
 {One paragraph summarizing the query and key findings.}
 
 ## {Body Sections}

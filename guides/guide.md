@@ -1,11 +1,11 @@
 # Obsidian AFPISH Vault — Folder & Tag Charter
 
-**Version:** 1.3  
+**Version:** 1.4  
 **Last Updated:** 2026-09-26  
-**Purpose:** Define folder hierarchy, file naming, and tag structure for agent-compliant, retrieval-optimized knowledge management.
+**Purpose:** Define folder hierarchy, file naming, tags, and callouts for agent-compliant, retrieval-optimized knowledge management.
 
-> **Make this guide yours before you bootstrap.** This file ships with the
-> LLM-wiki skill as `guides/guide.md`. The values below — areas, people, places,
+> [!important] Make this guide yours before you bootstrap
+> This file ships with the LLM-wiki skill as `guides/guide.md`. The values below — areas, people, places,
 > time windows — are the author's own. Edit them to match your life and work,
 > *then* run `init_vault.py`: it copies this guide into your vault as
 > `Systems/vault-guide.md`, puts a styled copy at the vault root as
@@ -130,6 +130,68 @@ Every file outside `/raw` and `/+` is named from its content, then its type:
 **Exempt:** `/raw` (sources keep their dated slug names), `/+` (the inbox is
 transient), dot-folders, and the fixed files `HOME.md`, `ME.md`, `GUIDE.html`,
 `Systems/vault-guide.md`, `wiki/index.md`, `wiki/log.md`.
+
+---
+
+## Callouts
+
+Callouts are Obsidian's highlighted cards. Use one when a point needs extra
+attention, so it stands out on a skim and is easier to recall later. Write the
+title as the point itself: the title alone should remind you of the idea.
+
+```markdown
+> [!important] Attention cost grows with the square of the context
+> Doubling the context roughly quadruples the attention compute.
+```
+
+Use only these types:
+
+| Callout | Use it for |
+|---------|------------|
+| `[!summary]` | The note's takeaway in one to three sentences, right under the title (after the metadata in wiki articles) |
+| `[!important]` | A key fact, rule, or idea to remember |
+| `[!tip]` | How to apply it; a practical shortcut |
+| `[!example]` | A worked example |
+| `[!warning]` | A pitfall, risk, contradiction, or common mistake |
+| `[!question]` | An open question to come back to |
+| `[!quote]` | A quote worth keeping word for word |
+| `[!info]` | Background or context |
+| `[!todo]` | A next action |
+
+- **Sparingly.** One `[!summary]` per note, and about three other callouts at
+  most. When everything is highlighted, nothing is
+- **Fold long ones.** `> [!example]-` starts collapsed, `> [!example]+` starts
+  open
+- **Wiki articles and `/Concepts` notes** open with a `[!summary]`
+- **In wiki articles**, a callout's numbers, dates, and quotes must still be
+  found in the linked raw sources, like any other text
+- Obsidian's other built-in types map to these: `tldr`/`abstract` →
+  `summary`, `hint` → `tip`, `caution`/`attention`/`danger`/`failure`/`bug` →
+  `warning`, `faq`/`help` → `question`, `cite` → `quote`, `note` → `info`
+
+---
+
+## Obsidian Configuration
+
+Set these once after bootstrapping, and re-check them after an Obsidian update
+or on a new device. They keep what you do in Obsidian consistent with what the
+agent does.
+
+| Setting | Where | Value | Why |
+|---------|-------|-------|-----|
+| Use `[[Wikilinks]]` | Settings → Files and links | Off | The agent's checks read markdown links; wikilinks you type still work, but new links should be markdown |
+| New link format | Settings → Files and links | Relative path to file | Matches the links the agent writes |
+| Automatically update internal links | Settings → Files and links | On | Renames you make in Obsidian keep links working |
+| Default location for new notes | Settings → Files and links | In the folder specified below: `+` | New notes land in the inbox; `/organize` names, tags, and files them |
+| Default location for new attachments | Settings → Files and links | In the folder specified below: `assets` | Keeps pasted images out of `raw/` and `wiki/` |
+| Detect all file extensions | Settings → Files and links | On | Shows `GUIDE.html` and other non-markdown files in the file explorer |
+| Bookmarks | Core plugins → Bookmarks | Bookmark `HOME.md`, `ME.md`, `Systems/vault-guide.md` | One click to your front page and the rules |
+| Web Clipper note location | Web Clipper → Templates | `+` | Clips land in the inbox |
+| Web Clipper template body | Web Clipper → Templates | The raw template (see the skill's `references/obsidian-conventions.md`) | Clips arrive in the shape `raw/` files use |
+
+Optional community plugins: **Homepage** (open `HOME.md` on startup),
+**Excalidraw** (name drawings `{words}_excali.excalidraw.md`; see
+[File Naming](#file-naming)), **Dataview** (live lists from tags).
 
 ---
 
@@ -361,6 +423,10 @@ metadata blockquotes, the index and log) and this guide wins on tags.
   tags — before the task is done (SKILL.md, "Compliance Gate").
 - **Name every file you create, move, or rename** to the [File Naming](#file-naming)
   convention, and update every link to a renamed file.
+- **Use [Callouts](#callouts) from the listed types only**, where a point needs
+  extra attention: a `[!summary]` at the top of every wiki article and
+  `/Concepts` note, and a few others at most. Never place one between a wiki
+  article's title and its metadata lines.
 - **Read `HOME.md` and `ME.md` before every task; never edit them without the
   human's explicit yes.** Follow ME.md's preferences. Point the human at what
   matters with "Suggested for HOME.md" lines, and offer lasting preferences as
@@ -405,6 +471,7 @@ metadata blockquotes, the index and log) and this guide wins on tags.
 
 When querying this vault, expect (except in `raw/`, `+/`, `HOME.md`, `ME.md`, `wiki/index.md` and `wiki/log.md`):
 - Every file name follows [File Naming](#file-naming)
+- Callouts use only the types in [Callouts](#callouts)
 - No tag outside this charter; `raw/` carries no tags at all
 - Every file sits in a folder this charter lists (`raw/<topic>/` and `wiki/<topic>/` for sources and articles)
 - Every note has exactly 1 `#status/*` tag
@@ -424,6 +491,7 @@ If a note violates these rules, it needs retagging.
 
 - Review `/Daily` for stragglers; move or archive
 - Make sure `/+` is empty; run `/organize` if not
+- Re-check [Obsidian Configuration](#obsidian-configuration) after Obsidian updates
 - Spot-check `/Areas/` notes for correct status/urgency
 - Update `#time/*` tags for next quarter if crossing a boundary
 
@@ -443,6 +511,7 @@ If a note violates these rules, it needs retagging.
 | 1.1 | 2026-09-25 | Aligned with the LLM-wiki skill: lowercase `raw/` and `wiki/`, customize-before-bootstrap note, agent rules for the skill |
 | 1.2 | 2026-09-26 | Added the `/+` inbox and `/assets`; `/organize`, `/ingest`, `/fetch` in the workflow |
 | 1.3 | 2026-09-26 | File naming convention; root files `HOME.md`, `ME.md`, `GUIDE.html`; non-charter tags are cleared |
+| 1.4 | 2026-09-26 | Callouts for recall; Obsidian configuration checklist |
 
 ---
 

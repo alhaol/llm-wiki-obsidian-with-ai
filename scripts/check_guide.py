@@ -13,6 +13,8 @@ customized guide is checked as written:
     "### Facet:" heading of "## Tag Charter", and each facet's count comes from
     its "Apply exactly 1" / "Apply 1-3" / "Apply as needed" sentence.
   * Folders: the paths in the "## Folder Hierarchy" code block.
+  * Callouts: the `[!type]` entries in the "## Callouts" table (no section, no
+    callout check).
 
 Reported, per markdown note outside the exempt set:
 
@@ -21,6 +23,7 @@ Reported, per markdown note outside the exempt set:
   raw tag         any tag in raw/ (sources are never tagged)
   folder          a file (any type) in a folder the guide does not list, or
                   loose at the vault root
+  unknown callout a `> [!type]` callout the guide does not list (not in raw/)
 
 raw/<topic>/ and wiki/<topic>/ topics are free, one level deep. Exempt: +/,
 dot-paths, HOME.md, ME.md, GUIDE.html, Systems/vault-guide.md, wiki/index.md,
@@ -31,8 +34,10 @@ only.
 else: unknown frontmatter tags are removed (the tags: key goes when empty);
 an unknown inline tag loses its `#`, or is removed outright on a line that
 holds only tags; in raw/ the frontmatter tags go and every inline tag is
-escaped to `\\#` (it renders the same, but is no longer a tag). It never adds
-tags: choosing the guide's values is judgment, not mechanics.
+escaped to `\\#` (it renders the same, but is no longer a tag). Outside raw/,
+a callout using one of Obsidian's built-in aliases (`tldr`, `hint`,
+`caution`, ...) is renamed to the listed type it stands for. It never adds
+tags or callouts: choosing them is judgment, not mechanics.
 
 Exits 1 when anything is reported (after --strip: anything left).
 """
@@ -69,6 +74,22 @@ FENCE_RE = re.compile(r"^\s*(```|~~~)")
 CODE_SPAN_RE = re.compile(r"(`+)(.*?)\1")
 FM_TAGS_RE = re.compile(r"^(tags?)\s*:\s*(.*)$", re.I)
 FM_ITEM_RE = re.compile(r"^\s*-\s*(.*)$")
+CALLOUT_RE = re.compile(r"^(\s*(?:>\s*)+)\[!([A-Za-z-]+)\]")
+GUIDE_CALLOUT_RE = re.compile(r"`\[!([A-Za-z-]+)\]`")
+
+# Obsidian's built-in callout aliases, and the type each stands for. --strip
+# renames one only when the guide lists the target.
+CALLOUT_ALIASES = {
+    "tldr": "summary", "abstract": "summary",
+    "hint": "tip",
+    "caution": "warning", "attention": "warning", "danger": "warning",
+    "error": "warning", "failure": "warning", "fail": "warning",
+    "missing": "warning", "bug": "warning",
+    "faq": "question", "help": "question",
+    "cite": "quote",
+    "note": "info",
+    "check": "success", "done": "success",
+}
 
 
 @dataclass
@@ -76,6 +97,7 @@ class Charter:
     values: set[str] = field(default_factory=set)
     counts: dict[str, tuple[int, int | None]] = field(default_factory=dict)
     folders: set[str] = field(default_factory=set)
+    callouts: set[str] = field(default_factory=set)
 
 
 def section(text: str, heading: str) -> str:
@@ -103,6 +125,7 @@ def read_charter(text: str) -> Charter:
         match = FOLDER_LINE_RE.match(line)
         if match:
             charter.folders.add(match.group(1))
+    charter.callouts = {c.lower() for c in GUIDE_CALLOUT_RE.findall(section(text, "Callouts"))}
     return charter
 
 
@@ -188,6 +211,29 @@ def is_note(rel: Path) -> bool:
     return rel.suffix == ".md" and not rel.name.endswith(".excalidraw.md")
 
 
+def callouts(body: list[str]) -> list[tuple[int, re.Match]]:
+    found, fenced = [], False
+    for n, line in enumerate(body):
+        if FENCE_RE.match(line):
+            fenced = not fenced
+        elif not fenced:
+            match = CALLOUT_RE.match(line)
+            if match:
+                found.append((n, match))
+    return found
+
+
+def map_callouts(body: list[str], charter: Charter) -> list[str]:
+    body = list(body)
+    for n, match in callouts(body):
+        kind = match.group(2).lower()
+        target = CALLOUT_ALIASES.get(kind)
+        if kind not in charter.callouts and target in charter.callouts:
+            s, e = match.span(2)
+            body[n] = body[n][:s] + target + body[n][e:]
+    return body
+
+
 def check_file(vault: Path, rel: Path, charter: Charter, strip: bool) -> list[str]:
     problems = []
     folder = folder_problem(rel, charter)
@@ -205,6 +251,8 @@ def check_file(vault: Path, rel: Path, charter: Charter, strip: bool) -> list[st
 
     if strip:
         fm, body = strip_tags(fm, body, fm_tags, span, inline, charter, in_raw)
+        if charter.callouts and not in_raw:
+            body = map_callouts(body, charter)
         new = ("---\n" + "\n".join(fm) + "\n---\n" if fm else "") + "\n".join(body)
         if new != text:
             path.write_text(new, encoding="utf-8")
@@ -217,6 +265,9 @@ def check_file(vault: Path, rel: Path, charter: Charter, strip: bool) -> list[st
         return problems
 
     problems += [f"unknown tag: {t}" for t in dict.fromkeys(tags) if t not in charter.values]
+    if charter.callouts:
+        kinds = dict.fromkeys(m.group(2) for _, m in callouts(body))
+        problems += [f"unknown callout: [!{k}]" for k in kinds if k.lower() not in charter.callouts]
     known = {t for t in tags if t in charter.values}
     for facet, (low, high) in charter.counts.items():
         n = sum(1 for t in known if t.split("/")[0] == facet)

@@ -1,15 +1,14 @@
 # HOME
 
-> Your front page: what you are focused on and the notes that matter most.
-> **You** write and maintain this file. The agent reads it before every task
-> and suggests entries under "Suggested for HOME.md" at the end of its work,
-> but never edits it without your yes.
+> [!info] Your front page
+> What you are focused on and the notes that matter most. **You** write and
+> maintain this file. The agent reads it before every task and suggests
+> entries under "Suggested for HOME.md" at the end of its work, but never
+> edits it without your yes.
 
-## Focus
-
-<!-- The one to three things getting your attention right now. -->
-
--
+> [!important] Focus
+> <!-- The one to three things getting your attention right now. -->
+> -
 
 ## Key notes
 
@@ -24,8 +23,6 @@
 
 -
 
-## Watching
-
-<!-- Topics you want the agent to flag when new material touches them. -->
-
--
+> [!question] Watching
+> <!-- Topics you want the agent to flag when new material touches them. -->
+> -

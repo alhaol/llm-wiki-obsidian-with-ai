@@ -4,7 +4,8 @@
 **Last Updated:** 2026-09-26  
 **Purpose:** A minimal folder, naming, and tag charter to grow from.
 
-> **This is the starter guide.** It keeps only what every vault needs: a few
+> [!info] This is the starter guide
+> It keeps only what every vault needs: a few
 > folders, the naming convention, and four tag facets. Bootstrap with
 > `init_vault.py --starter` to use it, then grow it in Obsidian
 > (`Systems/vault-guide.md`): add areas as projects start, add tag values when
@@ -99,6 +100,48 @@ Every file outside `/raw` and `/+` is named from its content, then its type:
 
 ---
 
+## Callouts
+
+Callouts are Obsidian's highlighted cards. Use one when a point needs extra
+attention; write its title as the point itself, so it works as a recall cue.
+
+```markdown
+> [!important] Review weekly, not daily
+> A daily review becomes a chore; weekly keeps it worth doing.
+```
+
+Use only these types:
+
+| Callout | Use it for |
+|---------|------------|
+| `[!summary]` | The note's takeaway in one to three sentences, right under the title |
+| `[!important]` | A key fact or idea to remember |
+| `[!tip]` | How to apply it |
+| `[!warning]` | A pitfall or risk |
+| `[!question]` | An open question to come back to |
+
+One `[!summary]` per note and about three other callouts at most. Fold long
+ones with `> [!tip]-`. Add a type to this table when you need one.
+
+---
+
+## Obsidian Configuration
+
+Set these once after bootstrapping; re-check them after an Obsidian update or
+on a new device.
+
+| Setting | Where | Value |
+|---------|-------|-------|
+| Use `[[Wikilinks]]` | Settings → Files and links | Off |
+| New link format | Settings → Files and links | Relative path to file |
+| Automatically update internal links | Settings → Files and links | On |
+| Default location for new notes | Settings → Files and links | In the folder specified below: `+` |
+| Default location for new attachments | Settings → Files and links | In the folder specified below: `assets` |
+| Detect all file extensions | Settings → Files and links | On |
+| Bookmarks | Core plugins → Bookmarks | `HOME.md`, `ME.md`, `Systems/vault-guide.md` |
+
+---
+
 ## Tag Charter
 
 Tags go in each note's frontmatter, written without `#`:
@@ -160,6 +203,9 @@ with an "Apply ..." sentence. The agent picks it up on the next task.
   and rename only with `scripts/rename.py`.
 - Everything you ingest or organize passes the skill's Compliance Gate before
   the task is done.
+- Use only the [Callouts](#callouts) listed here: a `[!summary]` at the top of
+  every wiki article and `/Concepts` note, and a few others where a point needs
+  extra attention.
 - Never edit `HOME.md` or `ME.md` without the human's explicit yes.
 
 ---
@@ -169,3 +215,4 @@ with an "Apply ..." sentence. The agent picks it up on the next task.
 | Version | Date | Change |
 |---------|------|--------|
 | 1.0 | 2026-09-26 | Starter guide |
+| 1.1 | 2026-09-26 | Callouts and Obsidian configuration |

@@ -6,11 +6,19 @@
 
 ## Overview
 
+> [!summary]
+> {The takeaway in one to three sentences.}
+
 {One paragraph summarizing the key points of this article.}
 
 ## {Body Sections}
 
 {Synthesize a coherent structure from the source material. Do not copy source text verbatim; distill and reorganize. Use blockquotes sparingly for particularly important original phrasing.}
+
+{OPTIONAL — a callout where a point needs extra attention, from the vault guide's Callouts table; about three per article at most, title written as the point itself:}
+
+> [!important] {The key idea, stated as a claim}
+> {Why it matters, with its numbers located in raw.}
 
 {OPTIONAL status blocks — place directly beneath a claim that turns out to be outdated or disputed, so readers and lint can tell it no longer stands as written:}
 

@@ -167,3 +167,48 @@ class VaultTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CalloutTest(unittest.TestCase):
+    def test_palette_comes_from_the_guides(self):
+        full = check_guide.read_charter(SHIPPED).callouts
+        self.assertEqual(
+            full,
+            {"summary", "important", "tip", "example", "warning", "question", "quote", "info", "todo"},
+        )
+        starter = (ROOT / "guides" / "starter-guide.md").read_text(encoding="utf-8")
+        self.assertEqual(
+            check_guide.read_charter(starter).callouts,
+            {"summary", "important", "tip", "warning", "question"},
+        )
+
+    def test_reports_and_maps_callouts(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            vault = Path(tmp)
+            files = {
+                "Systems/vault-guide.md": SHIPPED,
+                "Concepts/idea_notes_md.md": f"---\n{GOOD}\n---\n# Idea\n\n> [!TLDR] Short\n> body\n\n"
+                                             "> [!summary]\n\n> > [!hint]- nested\n\n> [!rocket] Custom\n\n"
+                                             "```\n> [!fenced]\n```\n",
+                "raw/ml/2026-01-01-paper.md": "# P\n\n> Source: x\n\n> [!tldr] kept verbatim\n",
+            }
+            for rel, text in files.items():
+                (vault / rel).parent.mkdir(parents=True, exist_ok=True)
+                (vault / rel).write_text(text, encoding="utf-8")
+
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out):
+                check_guide.main(["check_guide.py", str(vault)])
+            report = out.getvalue()
+            for expected in ["unknown callout: [!TLDR]", "unknown callout: [!hint]", "unknown callout: [!rocket]"]:
+                self.assertIn(expected, report)
+            self.assertNotIn("[!fenced]", report)
+            self.assertNotIn("raw/ml", report)
+
+            with contextlib.redirect_stdout(io.StringIO()):
+                check_guide.main(["check_guide.py", str(vault), "--strip"])
+            note = (vault / "Concepts/idea_notes_md.md").read_text(encoding="utf-8")
+            self.assertIn("> [!summary] Short", note)
+            self.assertIn("> > [!tip]- nested", note)
+            self.assertIn("> [!rocket] Custom", note)  # no alias: left for a human decision
+            self.assertIn("> [!tldr] kept verbatim", (vault / "raw/ml/2026-01-01-paper.md").read_text(encoding="utf-8"))

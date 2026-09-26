@@ -27,6 +27,7 @@ FENCE_RE = re.compile(r"^\s*(```|~~~)")
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 HR_RE = re.compile(r"^\s*(?:-{3,}|\*{3,}|_{3,})\s*$")
 LIST_RE = re.compile(r"^(\s*)([-*+]|\d+[.)])\s+(.*)$")
+CALLOUT_RE = re.compile(r"^\[!([A-Za-z][\w-]*)\]([+-]?)\s*(.*)$")
 TABLE_SEP_RE = re.compile(r"^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$")
 
 CSS = """
@@ -59,6 +60,19 @@ pre code { background:none; padding:0; }
 blockquote { margin:16px 0; padding:10px 16px; background:var(--soft); border-left:4px solid var(--accent);
   border-radius:0 8px 8px 0; }
 blockquote p { margin:6px 0; }
+.callout { --c:#448aff; margin:16px 0; padding:10px 16px; border-left:4px solid var(--c);
+  border-radius:0 8px 8px 0; background:color-mix(in srgb, var(--c) 10%, transparent); }
+.callout p { margin:6px 0; }
+.callout-title { font-weight:600; color:var(--c); margin:2px 0 6px; }
+details.callout > summary { cursor:pointer; }
+.callout[data-callout="summary"], .callout[data-callout="tldr"] { --c:#00b8d4; }
+.callout[data-callout="important"] { --c:#7c4dff; }
+.callout[data-callout="tip"] { --c:#00bfa5; }
+.callout[data-callout="example"] { --c:#9c6ade; }
+.callout[data-callout="warning"] { --c:#f57c00; }
+.callout[data-callout="question"] { --c:#e6a700; }
+.callout[data-callout="quote"] { --c:#8a8f98; }
+.callout[data-callout="todo"] { --c:#2979ff; }
 table { border-collapse:collapse; width:100%; margin:12px 0 20px; font-size:15px; display:block; overflow-x:auto; }
 th, td { border:1px solid var(--border); padding:7px 10px; text-align:left; vertical-align:top; }
 th { background:var(--panel); }
@@ -142,6 +156,23 @@ def render_table(lines: list[str]) -> str:
     return f"<table><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>"
 
 
+def render_callout(match: re.Match, body: list[str], seen, toc) -> str:
+    """An Obsidian callout (`> [!type]+ Title`) as a card; +/- make it foldable."""
+    kind, fold, title = match.group(1).lower(), match.group(2), match.group(3).strip()
+    heading = inline(title) if title else kind.capitalize()
+    inner = render_blocks(body, seen, toc)
+    if fold:
+        opened = " open" if fold == "+" else ""
+        return (
+            f'<details class="callout" data-callout="{kind}"{opened}>'
+            f'<summary class="callout-title">{heading}</summary>{inner}</details>'
+        )
+    return (
+        f'<div class="callout" data-callout="{kind}">'
+        f'<p class="callout-title">{heading}</p>{inner}</div>'
+    )
+
+
 def render_blocks(lines: list[str], seen: dict[str, int], toc: list[tuple[str, str]]) -> str:
     out, i = [], 0
     while i < len(lines):
@@ -178,7 +209,11 @@ def render_blocks(lines: list[str], seen: dict[str, int], toc: list[tuple[str, s
             while j < len(lines) and lines[j].lstrip().startswith(">"):
                 j += 1
             inner = [re.sub(r"^\s*>\s?", "", l) for l in lines[i:j]]
-            out.append("<blockquote>" + render_blocks(inner, seen, toc) + "</blockquote>")
+            callout = CALLOUT_RE.match(inner[0])
+            if callout:
+                out.append(render_callout(callout, inner[1:], seen, toc))
+            else:
+                out.append("<blockquote>" + render_blocks(inner, seen, toc) + "</blockquote>")
             i = j
             continue
 

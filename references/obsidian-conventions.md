@@ -1,5 +1,10 @@
 # Obsidian conventions
 
+> [!tip] The short version is in the vault guide
+> The guide's **Obsidian Configuration** section (`Systems/vault-guide.md` in
+> your vault) is the checklist to apply after bootstrapping and re-check after
+> Obsidian updates. This file explains why each setting matters.
+
 The skill was written for a plain folder of markdown. Running it inside an
 Obsidian vault mostly just works, but five things need a decision. Paste the
 parts you want into your copy of `SKILL.md` so the rules travel with the skill.
@@ -58,7 +63,10 @@ an unreferenced raw file. Both are false positives that recur on every lint.
 In Obsidian: Settings → Files & Links → **"Default location for new
 attachments" → "In the folder specified below"** → `assets`.
 
-`assets/` sits outside both trees, so neither lint category sees it. It is the
+`assets/` sits outside both trees, so neither lint category sees it.
+
+Set **"Default location for new notes"** the same way, to `+`: notes you
+create land in the inbox, and `/organize` names, tags, and files them. It is the
 same folder Organize files attachments into, so pasted and organized files end
 up together.
 

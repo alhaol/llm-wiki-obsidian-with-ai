@@ -31,6 +31,9 @@ up to date, and makes sure every fact traces back to a source.
   agent both follow, so the vault stays organized as it grows
 - 🔤 **Readable names** — every note and file is named from its content plus a
   type identifier (`second_order_thinking_md.md`, `garden_bed_layout_png.png`)
+- 💡 **Callouts for recall** — a `> [!summary]` on every article and key
+  `> [!important]` / `> [!warning]` cards where a point needs attention, from
+  a small palette the vault guide defines
 - 🏠 **HOME and ME** — two notes you own: `HOME.md` is your front page,
   `ME.md` tells the agent who you are. It reads both, suggests updates, and
   never edits them without your yes
@@ -131,10 +134,13 @@ right by hand:
 ### After the bootstrapper
 
 1. In Obsidian → **Open folder as vault** → select `~/brain`
-2. Apply the settings in
-   [`references/obsidian-conventions.md`](references/obsidian-conventions.md) —
-   the link format one matters most, because **wikilinks silently disable every
-   lint check** the skill provides
+2. Apply the **Obsidian Configuration** checklist in the vault guide
+   (`Systems/vault-guide.md`, also in `GUIDE.html`): link format, new notes
+   into `+/`, attachments into `assets/`, bookmarks. The link format matters
+   most, because **wikilinks silently disable every lint check** the skill
+   provides. Re-check it after Obsidian updates;
+   [`references/obsidian-conventions.md`](references/obsidian-conventions.md)
+   explains each setting
 3. Start your agent **from the vault root** — the skill resolves `raw/` and
    `wiki/` relative to your working directory
 4. Open `Systems/vault-guide.md` in Obsidian and pin it — it is your map of
@@ -253,6 +259,31 @@ python .claude/skills/my-llm-wiki/scripts/rename.py . "Fleeting/Untitled 3.md" C
 agree, and your own notes only when you say yes. `raw/` keeps the dated slug
 names sources arrive with; `HOME.md`, `ME.md`, `GUIDE.html`,
 `Systems/vault-guide.md`, `wiki/index.md` and `wiki/log.md` are fixed names.
+
+### 💡 Callouts
+
+Obsidian callouts are highlighted cards. The vault guide lists a small palette
+of types and what each is for, so they stay meaningful instead of decorative:
+
+```markdown
+> [!summary] Attention replaces recurrence
+> The transformer relates every token to every other in one step.
+
+> [!warning] Quadratic cost
+> Attention compute grows with the square of the context length.
+```
+
+| Where | What the agent does |
+|---|---|
+| Wiki articles and archive pages | Open the Overview with a `[!summary]`; add `[!important]`, `[!warning]`, `[!question]`, ... only where a point needs attention (about three per note) |
+| Notes `/organize` files into `/Concepts` and `/Areas` | May add one `[!summary]` above your untouched text; suggests other callouts instead of inserting them |
+| `raw/` | Never: sources stay verbatim |
+| `HOME.md` and `ME.md` templates | Use callouts for Focus, Watching, priorities, and Avoid |
+
+Titles are written as the point itself, so a skim of the titles alone
+refreshes the note. `check_guide.py` flags callout types the guide does not
+list and maps Obsidian's aliases (`tldr` → `summary`, `hint` → `tip`) to the
+listed ones. Callouts need no plugin.
 
 ---
 
