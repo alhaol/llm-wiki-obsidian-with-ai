@@ -16,11 +16,14 @@ arguments. What it does:
   * verifies the vault is a git repo (Hermes needs .git to find project skills)
   * renames the skill in SKILL.md frontmatter to match its directory
   * creates raw/ and wiki/
+  * copies guides/guide.md into the vault as Systems/vault-guide.md and creates
+    the folders it lists (edit the guide *before* running this)
   * exposes the skill to Hermes via .agents/skills/ (symlink, junction, or copy)
   * writes a .gitignore that keeps Obsidian's churn out of history
   * prints the remaining manual steps
 
-Everything it creates lives in dot-directories, which Obsidian does not index.
+Apart from the folders and the vault guide, everything it creates lives in
+dot-directories, which Obsidian does not index.
 """
 
 from __future__ import annotations
@@ -46,6 +49,14 @@ AGENT_DIRS = {
 # Between them these three cover every supported agent, so the bootstrapper makes
 # the skill reachable from all of them no matter which one you cloned into.
 EXPOSE_DIRS = (".agents/skills", ".claude/skills", ".gemini/skills")
+
+# Where the vault guide ships inside the skill, and where it lands in the vault.
+# The vault copy is visible in Obsidian on purpose: the human reads it too.
+GUIDE_SOURCE = Path("guides/guide.md")
+GUIDE_TARGET = Path("Systems/vault-guide.md")
+
+# A folder line in the guide's "Folder Hierarchy" block, e.g. "  /Areas/Day-Job".
+FOLDER_LINE_RE = re.compile(r"^\s*/([^\s/][^\s]*?)/?\s*$")
 
 # OpenCode enforces this on the frontmatter name, and requires it to match the
 # skill's directory name.
@@ -155,6 +166,57 @@ def rename_skill(skill_root: Path) -> str:
     return f"{current} -> {dir_name}"
 
 
+def guide_folders(text: str) -> list[str]:
+    """Folder paths listed in the first code block under "## Folder Hierarchy"."""
+    section = re.search(
+        r"^##\s+Folder Hierarchy\s*$(.*?)(?=^##\s|\Z)", text, re.M | re.S
+    )
+    if not section:
+        return []
+    block = re.search(r"^```[^\n]*\n(.*?)^```", section.group(1), re.M | re.S)
+    if not block:
+        return []
+    folders = []
+    for line in block.group(1).splitlines():
+        match = FOLDER_LINE_RE.match(line)
+        if match and ".." not in match.group(1).split("/"):
+            folders.append(match.group(1))
+    return folders
+
+
+def install_guide(vault: Path, skill_root: Path, source: Path | None) -> list[tuple[str, str]]:
+    """Copy the vault guide in (never overwriting) and create its folders.
+
+    Folders come from the vault copy when it already exists, so re-running
+    after editing the guide in Obsidian picks up new folders.
+    """
+    steps: list[tuple[str, str]] = []
+    target = vault / GUIDE_TARGET
+    label = str(GUIDE_TARGET).replace(os.sep, "/")
+
+    if target.is_file():
+        steps.append((label, "left alone (already exists; folders read from it)"))
+    else:
+        source = source or skill_root / GUIDE_SOURCE
+        if not source.is_file():
+            steps.append((label, f"skipped (no guide at {source})"))
+            return steps
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        steps.append((label, "created"))
+
+    created = []
+    for folder in guide_folders(target.read_text(encoding="utf-8")):
+        path = vault / folder
+        if not path.is_dir():
+            path.mkdir(parents=True)
+            created.append(folder)
+    steps.append(
+        ("guide folders", ", ".join(f"{f}/" for f in created) if created else "all present")
+    )
+    return steps
+
+
 def expose_in(vault: Path, skill_root: Path, agent_dir: str) -> str:
     """Make the skill reachable from <vault>/<agent_dir>/<name>.
 
@@ -215,6 +277,17 @@ def main() -> int:
             "from both .agents/skills/ and .claude/skills/."
         ),
     )
+    parser.add_argument(
+        "--guide",
+        type=Path,
+        help=f"Vault guide to install. Defaults to {GUIDE_SOURCE} in the skill.",
+    )
+    parser.add_argument(
+        "--no-guide",
+        dest="install_guide",
+        action="store_false",
+        help=f"Do not install {GUIDE_TARGET} or create the folders it lists.",
+    )
     args = parser.parse_args()
 
     try:
@@ -252,6 +325,9 @@ def main() -> int:
                     )
                 )
 
+        if args.install_guide:
+            steps.extend(install_guide(vault, skill_root, args.guide))
+
         gitignore = vault / ".gitignore"
         if gitignore.exists():
             steps.append((".gitignore", "left alone (already exists)"))
@@ -285,6 +361,9 @@ Next steps
   3. Ask it to ingest something:
 
        "add https://example.com/post to the wiki"
+
+  4. Read {GUIDE_TARGET.as_posix()} in Obsidian. It is the folder and tag
+     charter both you and the agent follow -- edit it there as your vault grows.
 
 Customization goes in {installed_in}/{skill_root.name}/SKILL.md so your rules
 travel with the skill. See references/obsidian-conventions.md for the

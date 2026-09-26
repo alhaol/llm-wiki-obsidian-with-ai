@@ -21,6 +21,8 @@ up to date, and makes sure every fact traces back to a source.
   facts that don't match their sources
 - 🔒 **Grounded** — every number, date, and quote in your wiki must exist
   verbatim in the source file it cites. Verified once, verified forever.
+- 🧭 **Vault guide** — one folder-and-tag charter that you and the agent both
+  follow, so the vault stays organized as it grows
 
 ### 🤖 Works with any agent
 
@@ -51,6 +53,13 @@ One install, four supported agents:
 > Replace `my-llm-wiki` with whatever you want to call the skill — it becomes
 > the slash command (`/my-llm-wiki`) in OpenCode and Hermes. Lowercase, hyphens
 > only.
+
+> 🧭 **Before step 3, make the vault guide yours.** The clone contains
+> [`guides/guide.md`](guides/guide.md), the folder and tag charter for your
+> vault. Its areas, people, and places are the author's; edit them in the
+> cloned copy (for example `.claude/skills/my-llm-wiki/guides/guide.md`) before
+> you run the bootstrapper, which copies it into the vault and creates its
+> folders. See [Vault Guide](#-vault-guide) below.
 
 ### macOS / Linux
 
@@ -215,13 +224,14 @@ hermes skills trust
 
 ### What the bootstrapper does
 
-Step 3 is not optional glue — it handles four things that are tedious to get
+Step 3 is not optional glue — it handles five things that are tedious to get
 right by hand:
 
 | | What | Why |
 |---|---|---|
 | 🏷️ | Renames the skill in `SKILL.md` frontmatter | OpenCode rejects a skill whose `name:` and folder disagree |
 | 📁 | Creates `raw/` and `wiki/` | The two directories your vault needs |
+| 🧭 | Copies `guides/guide.md` to `Systems/vault-guide.md` and creates the folders it lists | One charter, visible in Obsidian, that you and the agent both follow |
 | 🔗 | Cross-links the skill to `.agents/`, `.claude/`, `.gemini/` | So every agent can find it, no matter which directory you cloned into |
 | 🚫 | Writes a `.gitignore` | Keeps Obsidian's per-machine UI state out of git |
 
@@ -234,6 +244,64 @@ right by hand:
    lint check** the skill provides
 3. Start your agent **from the vault root** — the skill resolves `raw/` and
    `wiki/` relative to your working directory
+4. Open `Systems/vault-guide.md` in Obsidian and pin it — it is your map of
+   the vault
+
+---
+
+## 🧭 Vault Guide
+
+A wiki the agent writes is only half a vault. The other half is your own
+notes: daily captures, projects, ideas. The vault guide is a single note that
+says where everything goes and how it is tagged, and **both you and the agent
+follow it**.
+
+| | Folders — *where does it live?* | Tags — *what is it about?* |
+|---|---|---|
+| **Defines** | `Daily`, `Fleeting`, `Areas/<project>`, `Concepts`, `raw`, `wiki`, `Systems`, `Archive` | Facets written `#facet/value`: life balance (`afpish/*`), `status/*`, `urgency/*`, `time/*`, plus optional `type/*`, `people/*`, `places/*` |
+| **You** | Capture in `Daily`/`Fleeting`, file weekly | Tag in the weekly review, update `status/*` as work moves |
+| **Agent** | Keeps `raw/` and `wiki/` in order, writes elsewhere only when asked | Tags every wiki article from the guide's values, flags missing tags during lint |
+
+### Customize it, then bootstrap
+
+1. Edit `guides/guide.md` in your cloned copy of the skill. Replace the
+   example areas, people, places, and time windows with your own; add or
+   remove facets. Keep the **Folder Hierarchy** block's shape (one `/path`
+   per line) because the bootstrapper reads it to create folders.
+2. Run `init_vault.py`. It copies the guide to `Systems/vault-guide.md` and
+   creates every folder in the hierarchy.
+3. From then on, **the vault copy is the one that counts.** Edit it in
+   Obsidian as your life changes, and re-run `init_vault.py` to create any
+   folders you added. It never overwrites the vault copy.
+
+Already have your own charter? Pass `--guide path/to/charter.md`. Don't want
+one? Pass `--no-guide`, and the skill behaves exactly as before.
+[`guides/guide.html`](guides/guide.html) is a styled preview of the shipped
+guide for reading in a browser.
+
+### How the agent uses it
+
+`SKILL.md` tells the agent to read `Systems/vault-guide.md` before every
+ingest, archive, and lint. The skill keeps its structure rules for `raw/` and
+`wiki/`, and the guide decides the tags. Each wiki article gets the guide's
+tags as YAML frontmatter above its title, which Obsidian's tag pane, search,
+and Dataview all read:
+
+```markdown
+---
+tags: [afpish/professional, status/progress, urgency/medium, time/ongoing, type/paper]
+---
+
+# Transformer Architecture
+
+> Sources: Vaswani et al., 2017-06-12
+> Raw: [attention](../../raw/machine-learning/2017-06-12-attention-is-all-you-need.md)
+> Updated: 2026-09-25
+```
+
+`raw/` files are never tagged, because they are immutable. When the agent needs
+a tag value or folder the guide lacks, it asks you to add it to the guide
+instead of making one up.
 
 ---
 
@@ -361,6 +429,7 @@ After setup, from the vault root:
 ├── 📂 .claude/skills/my-llm-wiki/   ← the skill (hidden from Obsidian)
 │   ├── 📄 SKILL.md                  ← customize here
 │   ├── 📂 references/               ← templates the agent follows
+│   ├── 📂 guides/                   ← vault guide template (edit before bootstrap)
 │   ├── 📂 scripts/                  ← check_evidence.py, init_vault.py
 │   └── 📂 examples/                 ← real wiki samples (see below)
 ├── 🔗 .agents/skills/my-llm-wiki    ← link for Hermes
@@ -371,13 +440,16 @@ After setup, from the vault root:
 │   ├── 📄 index.md
 │   ├── 📄 log.md
 │   └── <topic>/<article>.md
+├── 📂 Systems/
+│   └── 📄 vault-guide.md            ← folder & tag charter, yours to edit
+├── 📂 Daily/ Fleeting/ Areas/ ...   ← your notes, per the guide
 ├── 📂 assets/                       ← Obsidian attachments
 └── 📄 .gitignore
 ```
 
-> 💡 Only `raw/`, `wiki/`, and `assets/` are visible in Obsidian. Everything
-> in dot-directories (`.claude/`, `.gemini/`, `.agents/`) is invisible to the
-> vault.
+> 💡 Everything in dot-directories (`.claude/`, `.gemini/`, `.agents/`) is
+> invisible to the vault. What you see in Obsidian is `raw/`, `wiki/`,
+> `assets/`, and the folders from your vault guide.
 
 ---
 
@@ -489,8 +561,9 @@ the Hermes path, the two copies drift. Re-run `init_vault.py` after editing
 ## ⚙️ Customizing
 
 Edit `SKILL.md` in your copy. It is the schema layer — topic conventions, how
-aggressive to be about creating new articles, your tag taxonomy, house style for
-summaries. Rules live there rather than in a root `CLAUDE.md` so they travel with
+aggressive to be about creating new articles, house style for summaries. Your
+folder and tag taxonomy lives in the [vault guide](#-vault-guide) instead, where
+you can see it in Obsidian. Rules live there rather than in a root `CLAUDE.md` so they travel with
 the skill and stay out of the vault.
 
 [`references/obsidian-conventions.md`](references/obsidian-conventions.md) has
@@ -585,11 +658,13 @@ The skill itself — `SKILL.md`, `references/raw-template.md`,
 `references/archive-template.md`, `scripts/check_evidence.py`, `tests/` and
 `examples/` — is from
 [Astro-Han/karpathy-llm-wiki](https://github.com/Astro-Han/karpathy-llm-wiki)
-by Yuhan Lei, MIT licensed. The only change to those files is adding explicit
-`encoding="utf-8"` to file I/O in `tests/`, which otherwise fails on Windows.
+by Yuhan Lei, MIT licensed. Changes to those files: explicit `encoding="utf-8"`
+in `tests/` file I/O (which otherwise fails on Windows), and a Vault Guide
+section in `SKILL.md`.
 
 This repo adds the Obsidian integration: `scripts/init_vault.py`,
-`references/obsidian-conventions.md`, and this README.
+`references/obsidian-conventions.md`, `guides/`, `tests/test_init_vault.py`,
+and this README.
 
 The underlying idea is Andrej Karpathy's: the LLM writes and maintains the wiki,
 the human reads and asks questions, and the wiki is a persistent, compounding

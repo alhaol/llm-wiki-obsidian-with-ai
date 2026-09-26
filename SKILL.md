@@ -26,6 +26,17 @@ Three layers, all under the user's project root:
 
 Templates live in `references/` relative to this file. Read them when you need the exact format for raw files, articles, archive pages, or the index.
 
+### Vault Guide
+
+`Systems/vault-guide.md`, when it exists, is the vault's folder and tag charter. The human wrote it and follows it too. Read it before any Ingest, Archive, or Lint, and before writing any note outside raw/ and wiki/. How the two fit together:
+
+- **This file wins on structure** in raw/ and wiki/: file names, topic directories, metadata blockquotes, index, log.
+- **The guide wins on tags.** Give every new or updated wiki article (archive pages included) YAML frontmatter above the H1 with the guide's mandatory facets, written without `#` (for example, `tags: [afpish/professional, status/progress, urgency/medium, time/ongoing, type/paper]`). Never tag raw/ files, `wiki/index.md`, or `wiki/log.md`.
+- **Use only values the guide lists.** If a note needs a new tag value or folder, propose adding it to the guide; do not invent one. Folders outside raw/ and wiki/ belong to the human: write there only when asked.
+- During Lint, report wiki articles missing mandatory facets or using values the guide does not list (judgment report, no auto-fix).
+
+If the guide is absent, skip all of this.
+
 ### Initialization
 
 Triggers only on the first Ingest. Check whether `raw/` and `wiki/` exist. Create only what is missing; never overwrite existing files:

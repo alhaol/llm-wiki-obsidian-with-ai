@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian AFPISH Vault — Folder & Tag Charter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #ffffff;
+            --fg: #1a1a1a;
+            --accent: #0066cc;
+            --accent-light: #e6f2ff;
+            --border: #e0e0e0;
+            --code-bg: #f5f5f5;
+            --tag-bg: #fffacd;
+            --header-bg: #f9f9f9;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1a1a1a;
+                --fg: #e0e0e0;
+                --accent: #66b3ff;
+                --accent-light: #1a3a5c;
+                --border: #333333;
+                --code-bg: #2a2a2a;
+                --tag-bg: #3a3a00;
+                --header-bg: #252525;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            line-height: 1.6;
+            color: var(--fg);
+            background: var(--bg);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: var(--fg);
+        }
+
+        .meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+        }
+
+        h3 {
+            font-size: 1.1em;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            color: var(--fg);
+        }
+
+        p {
+            margin-bottom: 15px;
+        }
+
+        .intro-box {
+            background: var(--accent-light);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+
+        .folder-tree {
+            background: var(--code-bg);
+            padding: 15px;
+            border-radius: 4px;
+            font-family: "Monaco", "Courier New", monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--header-bg);
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        tr:nth-child(even) {
+            background: var(--code-bg);
+        }
+
+        .tag-example {
+            background: var(--tag-bg);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: "Monaco", "Courier New", monospace;
+            margin: 10px 0;
+            border-left: 3px solid var(--accent);
+        }
+
+        .example-section {
+            background: var(--code-bg);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            border-left: 4px solid var(--accent);
+        }
+
+        .example-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--accent);
+        }
+
+        .example-why {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border);
+            font-size: 0.95em;
+        }
+
+        .collapsible {
+            background: var(--header-bg);
+            color: var(--fg);
+            cursor: pointer;
+            padding: 12px;
+            border: 1px solid var(--border);
+            text-align: left;
+            outline: none;
+            font-size: 1em;
+            font-weight: 600;
+            border-radius: 4px;
+            margin: 10px 0;
+            transition: background-color 0.2s;
+        }
+
+        .collapsible:hover {
+            background: var(--accent-light);
+        }
+
+        .collapsible.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .content {
+            padding: 15px;
+            display: none;
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+        }
+
+        .content.show {
+            display: block;
+        }
+
+        .query-box {
+            background: var(--accent-light);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: "Monaco", "Courier New", monospace;
+            margin: 10px 0;
+            color: var(--fg);
+        }
+
+        .compliance-list {
+            list-style: none;
+            padding-left: 20px;
+        }
+
+        .compliance-list li {
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .compliance-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .version-table {
+            margin: 20px 0;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 0.9em;
+            color: #666;
+            text-align: center;
+        }
+
+        .data-script {
+            display: none;
+        }
+
+        @media print {
+            .collapsible {
+                background: white !important;
+                color: black !important;
+            }
+            .content {
+                display: block !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Obsidian AFPISH Vault</h1>
+            <p style="font-size: 1.1em; margin-top: 10px;">Folder & Tag Charter</p>
+            <div class="meta">
+                <span><strong>Version:</strong> 1.1</span>
+                <span><strong>Updated:</strong> 2026-09-25</span>
+            </div>
+        </header>
+
+        <section>
+            <h2>Overview</h2>
+            <div class="intro-box">
+                <p><strong>Purpose:</strong> Define folder hierarchy and tag structure for agent-compliant, retrieval-optimized knowledge management.</p>
+            </div>
+
+            <div class="intro-box">
+                <p><strong>Make this guide yours before you bootstrap.</strong> This is a preview of <code>guides/guide.md</code>. The areas, people, places and time windows are the author's own. Edit <code>guide.md</code> to match your life and work, <em>then</em> run <code>init_vault.py</code>: it copies the guide into your vault as <code>Systems/vault-guide.md</code> and creates every folder in the hierarchy. You and your agent both follow it from then on.</p>
+            </div>
+
+            <p>This vault organizes notes by <strong>folder (source/purpose)</strong> and <strong>tags (relationships/metadata)</strong>.</p>
+
+            <ul style="margin: 15px 0; padding-left: 20px;">
+                <li><strong>Folders</strong> answer: "Where should this live?" (context, source, processing stage)</li>
+                <li><strong>Tags</strong> answer: "What is this about?" and "What does it relate to?" (relationships, lifecycle, priorities)</li>
+            </ul>
+
+            <p style="font-style: italic; color: var(--accent);">Folders and tags are <strong>orthogonal</strong>—a note's folder location is independent of its tags.</p>
+        </section>
+
+        <section>
+            <h2>📂 Folder Hierarchy</h2>
+
+            <div class="folder-tree">
+/Daily
+  └─ Daily captured notes (process weekly)
+
+/Fleeting
+  └─ Quick inbox (temporary, process regularly)
+
+/Areas
+  /Areas/Day-Job
+  /Areas/Side-Business
+  /Areas/Family-Projects
+  /Areas/Open-Source
+  /Areas/Study
+
+/Concepts
+  └─ Reusable reference (patterns, principles, frameworks)
+
+/raw
+  └─ External sources, saved verbatim (immutable)
+
+/wiki
+  └─ Compiled knowledge articles, owned by the agent
+
+/Systems
+  └─ Meta-notes (charter, MOCs, indices)
+
+/Archive
+  └─ Completed, not active
+            </div>
+
+            <h3>Adding New Folders</h3>
+            <ol style="padding-left: 20px; margin: 15px 0;">
+                <li>Ask: Is this a <strong>source</strong> (raw), a <strong>stage</strong> (Daily), an <strong>active area</strong> (Areas), or <strong>meta</strong> (Systems)?</li>
+                <li>Document in <code>/Systems/vault-structure.md</code></li>
+                <li>Update this guide</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>🏷️ Tag Charter</h2>
+
+            <p><strong>All tag prefixes are lowercase and hyphenated:</strong> <code>#afpish/spirit</code>, not <code>#Afpish/Spirit</code></p>
+
+            <button class="collapsible">AFPISH: Life Balance (apply 1–3 per note)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#afpish/spirit</code></td>
+                        <td>Spiritual integrity, principles, intellectual grounding</td>
+                    </tr>
+                    <tr>
+                        <td><code>#afpish/family</code></td>
+                        <td>Family commitments, relationships, parenting</td>
+                    </tr>
+                    <tr>
+                        <td><code>#afpish/professional</code></td>
+                        <td>Work, career, consulting</td>
+                    </tr>
+                    <tr>
+                        <td><code>#afpish/independence</code></td>
+                        <td>Autonomy, self-directed projects, side ventures</td>
+                    </tr>
+                    <tr>
+                        <td><code>#afpish/social</code></td>
+                        <td>Community, networks, relationships beyond family</td>
+                    </tr>
+                    <tr>
+                        <td><code>#afpish/health</code></td>
+                        <td>Physical, mental, energy management</td>
+                    </tr>
+                </table>
+            </div>
+
+            <button class="collapsible">Status: Note Lifecycle (apply exactly 1 per note)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#status/start</code></td>
+                        <td>Not yet begun (outline, idea stage)</td>
+                    </tr>
+                    <tr>
+                        <td><code>#status/progress</code></td>
+                        <td>Active work in progress</td>
+                    </tr>
+                    <tr>
+                        <td><code>#status/complete</code></td>
+                        <td>Finished, polished, ready for use</td>
+                    </tr>
+                    <tr>
+                        <td><code>#status/archived</code></td>
+                        <td>Superseded or no longer relevant</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 10px; font-style: italic;"><strong>Note:</strong> Status is independent of folder. A <code>/wiki</code> article can be <code>#status/progress</code> or <code>#status/complete</code>.</p>
+            </div>
+
+            <button class="collapsible">Urgency: Priority Signal (apply 1 per note)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#urgency/critical</code></td>
+                        <td>Blocks something; must move this week</td>
+                    </tr>
+                    <tr>
+                        <td><code>#urgency/high</code></td>
+                        <td>Important for direction; target this month</td>
+                    </tr>
+                    <tr>
+                        <td><code>#urgency/medium</code></td>
+                        <td>Worth attention; address this quarter</td>
+                    </tr>
+                    <tr>
+                        <td><code>#urgency/low</code></td>
+                        <td>Backlog; no deadline</td>
+                    </tr>
+                </table>
+            </div>
+
+            <button class="collapsible">Time: Relevance Window (apply 1 per note)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#time/immediate</code></td>
+                        <td>This week or today</td>
+                    </tr>
+                    <tr>
+                        <td><code>#time/q4-2026</code></td>
+                        <td>This quarter</td>
+                    </tr>
+                    <tr>
+                        <td><code>#time/2027</code></td>
+                        <td>This year</td>
+                    </tr>
+                    <tr>
+                        <td><code>#time/ongoing</code></td>
+                        <td>Standing, no endpoint</td>
+                    </tr>
+                    <tr>
+                        <td><code>#time/archived</code></td>
+                        <td>No longer on the calendar</td>
+                    </tr>
+                </table>
+            </div>
+
+            <button class="collapsible">Type: Note Category (apply as needed)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#type/paper</code></td>
+                        <td>Academic or research paper</td>
+                    </tr>
+                    <tr>
+                        <td><code>#type/tool</code></td>
+                        <td>Software/tool evaluation or setup</td>
+                    </tr>
+                    <tr>
+                        <td><code>#type/code</code></td>
+                        <td>Code snippet, implementation, script</td>
+                    </tr>
+                    <tr>
+                        <td><code>#type/decision</code></td>
+                        <td>Decision log, choice made</td>
+                    </tr>
+                    <tr>
+                        <td><code>#type/project-log</code></td>
+                        <td>Status update, progress note</td>
+                    </tr>
+                    <tr>
+                        <td><code>#type/moc</code></td>
+                        <td>Map of Content (index/outline)</td>
+                    </tr>
+                    <tr>
+                        <td><code>#type/daily</code></td>
+                        <td>Daily capture/journal</td>
+                    </tr>
+                </table>
+            </div>
+
+            <button class="collapsible">People: Key Stakeholders (apply as needed)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#people/jane-doe</code></td>
+                        <td>Key collaborator (example; replace with your own)</td>
+                    </tr>
+                    <tr>
+                        <td><code>#people/team-work</code></td>
+                        <td>Your work team</td>
+                    </tr>
+                    <tr>
+                        <td><code>#people/partner</code></td>
+                        <td>Partner or spouse</td>
+                    </tr>
+                    <tr>
+                        <td><code>#people/family</code></td>
+                        <td>Family members (group tag)</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 10px;"><strong>Extending:</strong> Add <code>#people/&lt;name&gt;</code> for new key contacts.</p>
+            </div>
+
+            <button class="collapsible">Places: Geographic Context (apply as needed)</button>
+            <div class="content">
+                <table>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Meaning</th>
+                    </tr>
+                    <tr>
+                        <td><code>#places/home-city</code></td>
+                        <td>Your home city</td>
+                    </tr>
+                    <tr>
+                        <td><code>#places/abroad</code></td>
+                        <td>Travel or international work</td>
+                    </tr>
+                    <tr>
+                        <td><code>#places/office</code></td>
+                        <td>Your workplace</td>
+                    </tr>
+                    <tr>
+                        <td><code>#places/home</code></td>
+                        <td>Home, personal space</td>
+                    </tr>
+                </table>
+                <p style="margin-top: 10px;"><strong>Extending:</strong> Add <code>#places/&lt;location&gt;</code> for new geographic contexts.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>📝 Example: Side Business Plan</h2>
+
+            <div class="example-section">
+                <div class="example-title">Location: /Areas/Side-Business</div>
+                <div class="tag-example">#afpish/independence #afpish/professional #status/progress #urgency/high #time/q4-2026 #type/decision #people/jane-doe #places/abroad</div>
+                <div class="example-why">
+                    <strong>Why these tags?</strong>
+                    <ul style="padding-left: 20px; margin: 10px 0;">
+                        <li><code>#afpish/independence</code> + <code>#afpish/professional</code>: Spans both autonomy and career</li>
+                        <li><code>#status/progress</code>: Actively being refined</li>
+                        <li><code>#urgency/high</code>: Affects near-term direction</li>
+                        <li><code>#time/q4-2026</code>: Needed this quarter</li>
+                        <li><code>#type/decision</code>: Capturing a strategic choice</li>
+                        <li><code>#people/jane-doe</code>: Involves a key collaborator</li>
+                        <li><code>#places/abroad</code>: Geographic context</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>🔍 Agent Query Patterns</h2>
+
+            <h3>Find active work in a life domain:</h3>
+            <div class="query-box">#afpish/independence AND #status/progress</div>
+
+            <h3>Find high-urgency items this quarter:</h3>
+            <div class="query-box">#urgency/critical AND #time/q4-2026</div>
+
+            <h3>Find all papers being read:</h3>
+            <div class="query-box">#type/paper AND #status/progress</div>
+
+            <h3>Find everything related to a person:</h3>
+            <div class="query-box">#people/jane-doe</div>
+
+            <h3>Find completed notes by domain:</h3>
+            <div class="query-box">#afpish/professional AND #status/complete</div>
+        </section>
+
+        <section>
+            <h2>✅ Agent Compliance Expectations</h2>
+
+            <ul class="compliance-list">
+                <li>Every note has exactly <strong>1 #status/* tag</strong></li>
+                <li>Every note has exactly <strong>1 #urgency/* tag</strong></li>
+                <li>Every note has exactly <strong>1 #time/* tag</strong></li>
+                <li>Every note has <strong>1–3 #afpish/* tags</strong></li>
+                <li>Optional tags (#type/*, #people/*, #places/*) present as relevant</li>
+                <li>Folder structure mirrors active areas and processing stages</li>
+            </ul>
+
+            <p style="margin-top: 20px;"><strong>If a note violates these rules, it needs retagging.</strong></p>
+        </section>
+
+        <section>
+            <h2>👤 Human Guidelines</h2>
+
+            <h3>Daily Workflow</h3>
+            <ol style="padding-left: 20px; margin: 15px 0;">
+                <li><strong>Capture</strong> (/Daily or /Fleeting): Minimal tags, just capture</li>
+                <li><strong>Weekly Review</strong>: Move to appropriate folder + add full tag set</li>
+                <li><strong>Status Updates</strong>: Change #status/ tag as work progresses</li>
+                <li><strong>Synthesis</strong>: Drop sources into /raw and ask the agent to ingest them; it compiles /wiki. Your own polished thinking goes to /Concepts</li>
+            </ol>
+
+            <h3>Tag Discipline</h3>
+            <ul style="padding-left: 20px; margin: 15px 0;">
+                <li>Apply all mandatory facets: AFPISH, Status, Urgency, Time</li>
+                <li>Add optional facets (Type, People, Places) when relevant</li>
+                <li>Keep tag values consistent with the charter</li>
+                <li>Monthly cleanup: Archive stale progress notes or update time windows</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>🔄 Evolving the System</h2>
+
+            <h3>To add a value to an existing facet:</h3>
+            <ol style="padding-left: 20px; margin: 15px 0;">
+                <li>Add it to this guide</li>
+                <li>Update <code>/Systems/vault-structure.md</code></li>
+                <li>Use it going forward (no migration needed)</li>
+            </ol>
+
+            <h3>To add a new facet:</h3>
+            <ol style="padding-left: 20px; margin: 15px 0;">
+                <li>Define its purpose and values</li>
+                <li>Document it in this guide</li>
+                <li>Discuss before rolling out</li>
+                <li>Update <code>/Systems/vault-structure.md</code></li>
+            </ol>
+        </section>
+
+        <footer>
+            <p>Last Updated: 2026-09-25 | Version 1.0</p>
+            <p>See Also: <code>/Systems/vault-structure.md</code> | <code>/Systems/tag-examples.md</code> | <code>/Systems/agent-queries.md</code></p>
+        </footer>
+    </div>
+
+    <!-- Structured data for agent parsing -->
+    <script type="application/json" class="data-script" id="vault-charter">
+{
+  "version": "1.1",
+  "updated": "2026-09-25",
+  "folders": {
+    "/Daily": "Daily captured notes (process weekly)",
+    "/Fleeting": "Quick inbox (temporary)",
+    "/Areas": "Active projects/domains",
+    "/Concepts": "Reusable reference material",
+    "/raw": "External sources, saved verbatim (immutable)",
+    "/wiki": "Compiled knowledge articles, owned by the agent",
+    "/Systems": "Meta-notes (charter, MOCs, indices)",
+    "/Archive": "Completed, not active"
+  },
+  "facets": {
+    "afpish": {
+      "description": "Life Balance (apply 1-3)",
+      "values": ["spirit", "family", "professional", "independence", "social", "health"]
+    },
+    "status": {
+      "description": "Note Lifecycle (apply exactly 1)",
+      "values": ["start", "progress", "complete", "archived"]
+    },
+    "urgency": {
+      "description": "Priority Signal (apply 1)",
+      "values": ["critical", "high", "medium", "low"]
+    },
+    "time": {
+      "description": "Relevance Window (apply 1)",
+      "values": ["immediate", "q4-2026", "2027", "ongoing", "archived"]
+    },
+    "type": {
+      "description": "Note Category (apply as needed)",
+      "values": ["paper", "tool", "code", "decision", "project-log", "moc", "daily"]
+    },
+    "people": {
+      "description": "Key Stakeholders (apply as needed)",
+      "values": ["jane-doe", "team-work", "partner", "family"]
+    },
+    "places": {
+      "description": "Geographic Context (apply as needed)",
+      "values": ["home-city", "abroad", "office", "home"]
+    }
+  },
+  "compliance": {
+    "mandatory_facets": ["status", "urgency", "time", "afpish"],
+    "rules": [
+      "Every note has exactly 1 #status/* tag",
+      "Every note has exactly 1 #urgency/* tag",
+      "Every note has exactly 1 #time/* tag",
+      "Every note has 1-3 #afpish/* tags",
+      "Optional tags (#type/*, #people/*, #places/*) present as relevant",
+      "Folder structure mirrors active areas and processing stages"
+    ]
+  }
+}
+    </script>
+
+    <script>
+        // Collapsible functionality
+        document.querySelectorAll('.collapsible').forEach(button => {
+            button.addEventListener('click', function() {
+                this.classList.toggle('active');
+                const content = this.nextElementSibling;
+                if (content && content.classList.contains('content')) {
+                    content.classList.toggle('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
